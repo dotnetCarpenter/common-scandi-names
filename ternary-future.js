@@ -16,17 +16,18 @@ const successResponse = url => ({
   }
 })
 
-const mockFetch = url => Promise.resolve (failureResponse (url))
+const mockFetch = url => { throw new Error (url) }
+// const mockFetch = url => Promise.resolve (failureResponse (url))
 // const mockFetch = url => Promise.resolve (successResponse (url))
 
-//    tagByF :: (a -> Boolean) -> a -> Future e a
+//    tagByF :: (a -> Boolean) -> a -> Future a a
 const tagByF = f => x => f (x)
   ? F.resolve (x)
   : F.reject  (x)
 
 //    request :: String -> Future e a
 const request = S.pipe ([
-  F.encaseP (fetch),
+  F.encaseP (mockFetch),
   S.chain (tagByF (S.prop ('ok'))),
   F.coalesce (response => F.reject (`HTTP error! status: ${response.status}`))
              (F.encaseP (response => response.text ())),
