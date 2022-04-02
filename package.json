@@ -1,0 +1,12 @@
+{
+	"type": "module",
+	"license": "GPL-3.0",
+	"dependencies": {
+		"fluture": "^14.0.0",
+		"fluture-sanctuary-types": "^7.1.0",
+		"sanctuary": "^3.1.0"
+	},
+	"devDependencies": {
+		"node-fetch": "^3.2.3"
+	}
+}
