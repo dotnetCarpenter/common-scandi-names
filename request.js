@@ -50,11 +50,19 @@ const baseUrl = language => `https://raw.githubusercontent.com/OpenXcom/OpenXcom
 const swedishUrl = baseUrl ('Swedish')
 const danishUrl  = baseUrl ('Danish')
 
-const program = S.compose (responseToText)
+const program = S.compose (responseToHeaders)
                           (request)
 
+const options = {
+  redirect: 'follow',
+  url: danishUrl,
+  method: 'GET',
+  headers: {
+    range: 'bytes=0-127'
+  }
+}
 const cancel = F.fork (console.error)
                       (console.log)
-                      (program ({redirect: 'follow', url: danishUrl, method: 'GET', headers: { range: 'bytes=0-128' } }))
+                      (program (options))
 
 // cancel ()

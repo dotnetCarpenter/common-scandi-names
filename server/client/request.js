@@ -28,10 +28,29 @@ const preflight = options => request ({
   }
 })
 
+//    rejectionToString :: Response|Error|Any -> Future String a
+const rejectionToString = e => {
+  let rejection
+
+  switch (e.constructor) {
+    case Response:
+      rejection = `HTTP error! status: ${e.status}`
+      break
+    case Error:
+    case TypeError:
+      rejection = `HTTP error! message: ${e.message}`
+      break
+    default:
+      rejection = `Unknown rejection: ${String (e)}`
+  }
+
+  return F.reject (rejection)
+}
+
 //    responseToText :: Future e Response -> Future String String
 const responseToText = S.pipe ([
   S.chain (tagByF (S.prop ('ok'))),
-  F.coalesce (response => F.reject (`HTTP error! status: ${response.status}`))
+  F.coalesce (rejectionToString)
              (F.encaseP (response => response.text ())),
   S.join,
 ])
@@ -39,7 +58,7 @@ const responseToText = S.pipe ([
 //    responseToHeaders :: Future e Response -> Future String String
 const responseToHeaders = S.pipe ([
   S.chain (tagByF (S.prop ('ok'))),
-  F.coalesce (response => F.reject (`HTTP error! status: ${response.status}`))
+  F.coalesce (rejectionToString)
              (S.compose (F.resolve)
                         (S.prop ('headers'))),
   S.join,
