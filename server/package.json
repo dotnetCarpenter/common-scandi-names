@@ -1,0 +1,25 @@
+{
+  "name": "server",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+		"fluture": "fluture-js/Fluture#25cbb445250039ac2e1add982264670986f9df45",
+		"fluture-sanctuary-types": "^7.1.0",
+		"sanctuary": "sanctuary-js/sanctuary#72bc20ad02c5944b661efdcdd14ab60ceb92c7b3",
+    "sanctuary-def": "sanctuary-js/sanctuary-def#deadb523c488e8e7bbc988a662c62435be38a380",
+    "sanctuary-either": "sanctuary-js/sanctuary-either#18f6238f1d1e8e36d3dcdb44732255b3349eef46",
+    "sanctuary-maybe": "sanctuary-js/sanctuary-maybe#2d14d53f939c0a81e081d93dc4bda5622ca517a1",
+    "sanctuary-pair": "sanctuary-js/sanctuary-pair#829187679afceec52e889f884bdc6e9b0c0d0a18",
+    "sanctuary-show": "^3.0.0",
+    "sanctuary-type-classes": "sanctuary-js/sanctuary-type-classes#30d0a3258b8f03caf7d1e650d1cb7a3b1c6c9040"
+	},
+  "devDependencies": {
+    "vite": "^2.9.0"
+  }
+}

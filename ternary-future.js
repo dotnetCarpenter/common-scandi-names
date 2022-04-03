@@ -16,8 +16,8 @@ const successResponse = url => ({
   }
 })
 
-const mockFetch = url => { throw new Error (url) }
-// const mockFetch = url => Promise.resolve (failureResponse (url))
+// const mockFetch = url => { throw new Error (url) }
+const mockFetch = url => Promise.resolve (failureResponse (url))
 // const mockFetch = url => Promise.resolve (successResponse (url))
 
 //    tagByF :: (a -> Boolean) -> a -> Future a a
