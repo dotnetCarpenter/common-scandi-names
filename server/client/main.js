@@ -1,19 +1,34 @@
 import '../style.css'
 
-import { F }   from './sanctuary.js'
-import request from './request.js'
+import { F, S } from './sanctuary.js'
+import {
+  request,
+  preflight,
+  responseToText,
+  responseToHeaders
+}            from './request.js'
 
 const baseUrl = language => `https://raw.githubusercontent.com/OpenXcom/OpenXcom/master/bin/common/SoldierName/${language}.nam`
 const swedishUrl = baseUrl ('Swedish')
+const danishUrl  = baseUrl ('Danish')
 
-const cancel = F.fork (console.error)
-                      (console.log)
-                      (request ({url:swedishUrl, redirect: 'follow'}))
-// cancel ()
+const program = S.compose (responseToText)
+                          (request)
 
+const appHtml = document.querySelector ('#app')
+const fetchButton = appHtml.querySelector ('#fetch')
+const cancelButton = appHtml.querySelector ('#cancel-fetch')
 
-document.querySelector('#app').innerHTML = `
-  <h1>Hello Vite!</h1>
-  <a class="block" href="https://vitejs.dev/guide/features.html" target="_blank">Documentation</a>
-  <a class="block" href="https://example.com/" target="_blank">example.com</a>
-`
+fetchButton.addEventListener ('click', () => {
+  const cancel = F.fork (console.error)
+                        (console.log)
+                        (program ({
+                          redirect: 'follow',
+                          url: danishUrl,
+                          method: 'GET',
+                          headers: { range: 'bytes=0-128' }
+                        }))
+
+  cancelButton.onclick = cancel
+  // cancel () // You will have to be extremely fast to cancel the request by clicking the button
+})

@@ -18,10 +18,16 @@ const $Response = $.NullaryType
   ([])
   (x => toString.call (x) === '[object Response]')
 
+const $Headers = $.NullaryType
+  ('Response')
+  ('https://devdocs.io/dom/headers')
+  ([])
+  (x => toString.call (x) === '[object Headers]')
+
 
 const S = sanctuary.create ({
 	checkTypes: true,
-  env: sanctuary.env.concat (flutureEnv).concat ([$Event, $Response])
+  env: sanctuary.env.concat (flutureEnv).concat ([$Event, $Response, $Headers])
 })
 
 export { S, $, F }

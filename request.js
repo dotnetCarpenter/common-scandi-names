@@ -15,26 +15,46 @@ const request = ({url, ...options}) => F.Future ((reject, resolve) => {
     .catch (reject)
 
   return () => {
-    controller.abort ()
+    controller.abort (/* new AbortError ('cancelled') */)
   }
 })
 
-//    responseHandler :: String -> Future e a
-const responseHandler = S.pipe ([
+const preflight = options => request ({
+  url: options.url,
+  headers: {
+    origin: 'https://dotnetcarpenter.github.io',
+    'Access-Control-Request-Method': options.method || 'GET',
+    'Access-Control-Request-Headers': Object.keys (options.headers).join ()
+  }
+})
+
+//    responseToText :: Future e Response -> Future String String
+const responseToText = S.pipe ([
   S.chain (tagByF (S.prop ('ok'))),
   F.coalesce (response => F.reject (`HTTP error! status: ${response.status}`))
              (F.encaseP (response => response.text ())),
   S.join,
 ])
 
+//    responseToHeaders :: Future e Response -> Future String String
+const responseToHeaders = S.pipe ([
+  S.chain (tagByF (S.prop ('ok'))),
+  F.coalesce (response => F.reject (`HTTP error! status: ${response.status}`))
+             (S.compose (F.resolve)
+                        (S.prop ('headers'))),
+  S.join,
+])
+
+
 const baseUrl = language => `https://raw.githubusercontent.com/OpenXcom/OpenXcom/master/bin/common/SoldierName/${language}.nam`
 const swedishUrl = baseUrl ('Swedish')
+const danishUrl  = baseUrl ('Danish')
 
-const program = S.compose (responseHandler)
+const program = S.compose (responseToText)
                           (request)
 
 const cancel = F.fork (console.error)
                       (console.log)
-                      (program ({redirect: 'follow', url: swedishUrl}))
+                      (program ({redirect: 'follow', url: danishUrl, method: 'GET', headers: { range: 'bytes=0-128' } }))
 
 // cancel ()

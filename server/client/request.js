@@ -18,13 +18,39 @@ const request = ({url, ...options}) => F.Future ((reject, resolve) => {
   }
 })
 
-//    responseHandler :: String -> Future e a
-const responseHandler = S.pipe ([
+//    preflight :: StrMap -> Future e Response
+const preflight = options => request ({
+  url: options.url,
+  headers: {
+    origin: 'https://dotnetcarpenter.github.io', // will be ignored in any browser
+    'Access-Control-Request-Method': options.method || 'GET',
+    'Access-Control-Request-Headers': Object.keys (options.headers).join ()
+  }
+})
+
+//    responseToText :: Future e Response -> Future String String
+const responseToText = S.pipe ([
   S.chain (tagByF (S.prop ('ok'))),
   F.coalesce (response => F.reject (`HTTP error! status: ${response.status}`))
              (F.encaseP (response => response.text ())),
   S.join,
 ])
 
-export default S.compose (responseHandler)
+//    responseToHeaders :: Future e Response -> Future String String
+const responseToHeaders = S.pipe ([
+  S.chain (tagByF (S.prop ('ok'))),
+  F.coalesce (response => F.reject (`HTTP error! status: ${response.status}`))
+             (S.compose (F.resolve)
+                        (S.prop ('headers'))),
+  S.join,
+])
+
+export default S.compose (responseToText)
                          (request)
+
+export {
+  request,
+  preflight,
+  responseToText,
+  responseToHeaders
+}
