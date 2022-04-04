@@ -6,11 +6,6 @@ import {
 }                from 'fluture-sanctuary-types'
 
 const toString = Object.prototype.toString
-const $Event = $.NullaryType
-  ('Event')
-  ('https://devdocs.io/dom/event')
-  ([])
-  (x => toString.call (x) === '[object Event]')
 
 const $Response = $.NullaryType
   ('Response')
@@ -27,7 +22,10 @@ const $Headers = $.NullaryType
 
 const S = sanctuary.create ({
 	checkTypes: true,
-  env: sanctuary.env.concat (flutureEnv).concat ([$Event, $Response, $Headers])
+  env: sanctuary.env.concat (flutureEnv).concat ([
+    $Response,
+    $Headers
+  ])
 })
 
 export { S, $, F }

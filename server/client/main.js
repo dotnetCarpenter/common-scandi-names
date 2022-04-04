@@ -12,30 +12,49 @@ const baseUrl = language => `https://raw.githubusercontent.com/OpenXcom/OpenXcom
 const swedishUrl = baseUrl ('Swedish')
 const danishUrl  = baseUrl ('Danish')
 
-const program = S.compose (responseToText)
-                          (request)
+//    fetchData :: StrMap -> Future String String
+const fetchData = S.compose (responseToText)
+                            (request)
 
-const appHtml = document.querySelector ('#app')
-const fetchButton = appHtml.querySelector ('#fetch')
-const cancelButton = appHtml.querySelector ('#cancel-fetch')
-const resultPre   = appHtml.querySelector ('#result')
+//    fetchNames :: Future String String
+const fetchNames = fetchData ({
+  redirect: 'follow',
+  url: danishUrl,
+  method: 'GET',
+  headers: { range: 'bytes=0-127' }
+})
 
-fetchButton.addEventListener ('click', () => {
-  const cancel = (
+//    fetchHeaders :: Future String String
+const fetchHeaders = (
+  S.compose (responseToHeaders)
+            (request)
+            ({
+              redirect: 'follow',
+              url: danishUrl,
+              method: 'HEAD'
+            })
+)
+
+//-------------- DOM code --------------
+
+const appHtml       = document.querySelector ('#app')
+const fetchButton   = appHtml.querySelector ('#fetch')
+const headersButton = appHtml.querySelector ('#head')
+const cancelButton  = appHtml.querySelector ('#cancel-fetch')
+const resultPre     = appHtml.querySelector ('#result')
+
+//    consume :: Future String String -> Void
+const consume = future => (
+  cancelButton.onclick = (
     F.fork (error => {
               resultPre.textContent = `Error: ${error}`
            })
            (data => {
              resultPre.textContent = data
            })
-           (program ({
-             redirect: 'follow',
-             url: danishUrl,
-             method: 'GET',
-             headers: { range: 'bytes=0-128' }
-           }))
+           (future)
   )
+)
 
-  cancelButton.onclick = cancel
-  // cancel () // You will have to be extremely fast to cancel the request by clicking the button
-})
+fetchButton  .addEventListener ('click', S.compose (S.T (fetchNames)) (S.K (consume)))
+headersButton.addEventListener ('click', S.compose (S.T (fetchHeaders)) (S.K (consume)))

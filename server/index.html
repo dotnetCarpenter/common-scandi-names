@@ -10,11 +10,16 @@
     <div id="app">
       <h1>🗳️ Encapsulating Fetch</h1>
 
-      <button id="fetch">Fetch</button>
-      <button id="cancel-fetch">Cancel Fetch</button>
+      <section>
+        <button id="fetch">Fetch names</button>
+        <button id="head">Fetch headers</button>
+        <button id="cancel-fetch">Cancel Fetch</button>
+      </section>
 
-      <a class="block" href="https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API" target="_blank">Fetch API Documentation</a>
-
+      <section class="list-items">
+        <a class="list-items__item inline-block" href="https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API" target="_blank">Fetch API documentation</a>
+        <a class="list-items__item inline-block" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests" target="_blank">HTTP range requests documentation</a>
+      </section>
       <hr>
       <label>Result:<pre id="result"></pre></label>
     </div>
