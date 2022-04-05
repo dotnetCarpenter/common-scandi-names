@@ -10,13 +10,15 @@ const request = ({url, ...options}) => F.Future ((reject, resolve) => {
     .catch (reject)
 
   return () => {
-    controller.abort ()
+    controller.abort (/* new AbortError ('cancelled') */)
   }
 })
 
+// like a preflight but a real preflight is an OPTIONS request
 //    preflight :: StrMap -> Future e Response
 const preflight = options => request ({
   url: options.url,
+  method: 'HEAD',
   headers: {
     origin: 'https://dotnetcarpenter.github.io', // will be ignored in any browser
     'Access-Control-Request-Method': options.method || 'GET',

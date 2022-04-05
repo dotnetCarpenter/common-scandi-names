@@ -6,7 +6,7 @@ import {
   preflight,
   responseToText,
   responseToHeaders
-}            from './request.js'
+}               from './request.js'
 
 const baseUrl = language => `https://raw.githubusercontent.com/OpenXcom/OpenXcom/master/bin/common/SoldierName/${language}.nam`
 const swedishUrl = baseUrl ('Swedish')
