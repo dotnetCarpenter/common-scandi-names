@@ -1,11 +1,4 @@
-import util     from 'util'
-import { S, F } from './sanctuary.js'
-import {
-  request,
-  preflight,
-  responseToText,
-  responseToHeaders
-}               from './request.js'
+import { S } from './sanctuary.js'
 
 const TOKEN = Object.freeze ({
   UNKNOWN: 0,
@@ -66,6 +59,7 @@ const tokenize = string => (tail, tokens = []) => {
                   (tail.slice (1), S.append (token) (tokens))
 }
 
+//    lines :: String -> Array String
 const lines = s => s === ''
   ? []
   : (s.replace (/\r\n?/g, '\n')).match (/^(?=[\s\S]).*\n?/gm)
@@ -73,10 +67,11 @@ const lines = s => s === ''
 //    lexer :: String -> Array Token
 const lexer = S.pipe ([
   lines,
-  // x => (console.debug (x), x),
   S.array ([createToken ('') (TOKEN.UNKNOWN)]) (tokenize),
+  // TODO: syntax validation? E.i. Parent must come before child
 ])
 
+//    parse :: Pair -> Token
 const parse = pair => token => {
   let ast = S.fst (pair), parent = S.snd (pair)
 
@@ -88,7 +83,7 @@ const parse = pair => token => {
       parent.push (token.value)
       break
     default:
-      // throw new Error (`${token.value} is not recognized`)
+      // skip token
   }
 
   return S.Pair (ast) (parent)
@@ -100,37 +95,4 @@ const parser = S.pipe ([
   S.fst
 ])
 
-const baseUrl = language => `https://raw.githubusercontent.com/OpenXcom/OpenXcom/master/bin/common/SoldierName/${language}.nam`
-const swedishUrl = baseUrl ('Swedish')
-const danishUrl  = baseUrl ('Danish')
-
-const doPreflight = S.compose (responseToHeaders) (preflight)
-const getText     = S.compose (responseToText)    (request)
-const getHeaders  = S.compose (responseToHeaders) (request)
-
-const options = {
-  redirect: 'follow',
-  url: swedishUrl,
-  method: 'GET',
-  // headers: {
-  //   range: 'bytes=0-94'
-  // }
-}
-
-const cancel = F.fork (console.error)
-                      (S.pipe ([
-                        lexer,
-                        // x => (console.error (util.inspect (x)), x),
-                        parser,
-                        JSON.stringify,
-                        // x => (console.log (util.inspect (x, {
-                        //   maxArrayLength:
-                        //   1034,
-                        //   maxStringLength: 20000,
-                        //   colors: true
-                        // })), x),
-                        console.log,
-                      ]))
-                      (getText (options))
-
-// cancel ()
+export default S.compose (parser) (lexer)
