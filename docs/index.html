@@ -5,18 +5,23 @@
     <link rel="icon" type="image/png" href="/common-scandi-names/assets/favicon.68bb76f3.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Encapsulating Fetch</title>
-    <script type="module" crossorigin src="/common-scandi-names/assets/index.00348eb7.js"></script>
-    <link rel="stylesheet" href="/common-scandi-names/assets/index.0fdd6cdd.css">
+    <script type="module" crossorigin src="/common-scandi-names/assets/index.cdc1474f.js"></script>
+    <link rel="stylesheet" href="/common-scandi-names/assets/index.6e0da102.css">
   </head>
   <body>
     <div id="app">
       <h1>🗳️ Encapsulating Fetch</h1>
 
-      <button id="fetch">Fetch</button>
-      <button id="cancel-fetch">Cancel Fetch</button>
+      <section>
+        <button id="fetch">Fetch names</button>
+        <button id="head">Fetch headers</button>
+        <button id="cancel-fetch">Cancel Fetch</button>
+      </section>
 
-      <a class="block" href="https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API" target="_blank">Fetch API Documentation</a>
-
+      <section class="list-items">
+        <a class="list-items__item inline-block" href="https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API" target="_blank">Fetch API documentation</a>
+        <a class="list-items__item inline-block" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests" target="_blank">HTTP range requests documentation</a>
+      </section>
       <hr>
       <label>Result:<pre id="result"></pre></label>
     </div>
