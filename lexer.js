@@ -7,54 +7,105 @@ import {
   responseToHeaders
 }               from './request.js'
 
-const tokenEnum = Object.freeze ({
-  TOKEN_UNKNOWN: 0,
-  TOKEN_TERMINAL: 1,
+const TOKEN = Object.freeze ({
+  UNKNOWN: 0,
+  TERMINAL: 1,
 
   // Non terminals (e.i. they will be substituted in the parser)
-  TOKEN_SEPERATOR: 2,
-  TOKEN_SPACE: 4,
-  TOKEN_PARENT: 8,
-  TOKEN_CHILD: 16,
+  SEPERATOR: 2,
+  SPACE: 4,
+  PARENT: 8,
+  CHILD: 16,
+  NUMBER: 32,
 })
 
-const createToken = char => type => ({
-  value: char,
+//    createToken :: a -> TokenEnum -> Token
+const createToken = x => type => ({
+  value: x,
   type: type
 })
 
-const tokenize = char => (tail, tokens = []) => {
-  if (!char) return tokens
+//    matcher :: RegEx -> String -> Boolean|String
+const matcher = regex => string => regex.test(string) && string
 
-  const setType = createToken (char)
+const parentMatcher = matcher (/\w+:\n$/)
+
+const numberMatcher = matcher (/^\d+\n$/)
+
+const dashMatcher = matcher (/\s{2}-\s\w+/)
+
+const nameMatcher = matcher (/^\p{L}+\n$/u)
+
+//    tokenize :: String -> Array Token
+const tokenize = string => (tail, tokens = []) => {
+  if (!string) return tokens
+
   let token
 
-  switch (char) {
-    case '\n': token = setType (tokenEnum.TOKEN_SEPERATOR); break
-    case ' ':  token = setType (tokenEnum.TOKEN_SPACE); break
-    case ':':  token = setType (tokenEnum.TOKEN_PARENT); break
-    case '-':  token = setType (tokenEnum.TOKEN_CHILD); break
+  switch (string) {
+    case dashMatcher (string):
+      return tokenize (string.slice (4)) (tail, tokens)
+
+    case nameMatcher (string):
+      token = createToken (string.slice (0, -1)) (TOKEN.CHILD)
+      break
+
+    case numberMatcher (string):
+        token = createToken (Number (string.slice (0, -1))) (TOKEN.CHILD)
+        break
+
+    case parentMatcher (string):
+      token = createToken (string.slice (0, -2)) (TOKEN.PARENT)
+      break
+
     default:
-      token = setType (tokenEnum.TOKEN_TERMINAL)
+      token = createToken (string) (TOKEN.UNKNOWN)
   }
 
-  return tokenize (tail[0]) (tail.slice(1), S.append (token) (tokens))
+  return tokenize (tail[0])
+                  (tail.slice (1), S.append (token) (tokens))
 }
-const lexer = text => (
-  S.compose (S.array ([createToken (text) (tokenEnum.TOKEN_UNKNOWN)]) (tokenize))
-            (S.splitOn (''))
-            (text)
-)
-const parser = tokens => {
-  // switch
+
+const lines = s => s === ''
+  ? []
+  : (s.replace (/\r\n?/g, '\n')).match (/^(?=[\s\S]).*\n?/gm)
+
+//    lexer :: String -> Array Token
+const lexer = S.pipe ([
+  lines,
+  // x => (console.debug (x), x),
+  S.array ([createToken ('') (TOKEN.UNKNOWN)]) (tokenize),
+])
+
+const parse = pair => token => {
+  let ast = S.fst (pair), parent = S.snd (pair)
+
+  switch (token.type) {
+    case TOKEN.PARENT:
+      parent = ast[token.value] = []
+      break
+    case TOKEN.CHILD:
+      parent.push (token.value)
+      break
+    default:
+      // throw new Error (`${token.value} is not recognized`)
+  }
+
+  return S.Pair (ast) (parent)
 }
+
+//    parser :: Array Token -> Ast
+const parser = S.pipe ([
+  S.reduce (parse) (S.Pair ({}) ([])),
+  S.fst
+])
 
 const baseUrl = language => `https://raw.githubusercontent.com/OpenXcom/OpenXcom/master/bin/common/SoldierName/${language}.nam`
 const swedishUrl = baseUrl ('Swedish')
 const danishUrl  = baseUrl ('Danish')
 
 const doPreflight = S.compose (responseToHeaders) (preflight)
-const getText     = S.compose (responseToText) (request)
+const getText     = S.compose (responseToText)    (request)
 const getHeaders  = S.compose (responseToHeaders) (request)
 
 const options = {
@@ -62,15 +113,23 @@ const options = {
   url: swedishUrl,
   method: 'GET',
   // headers: {
-  //   range: 'bytes=0-99'
+  //   range: 'bytes=0-94'
   // }
 }
 
 const cancel = F.fork (console.error)
                       (S.pipe ([
-                        x => (process.stderr.write (x), x),
                         lexer,
-                        x => console.log (util.inspect (x, {maxArrayLength: 1034, maxStringLength: 20000, colors: false}))
+                        // x => (console.error (util.inspect (x)), x),
+                        parser,
+                        JSON.stringify,
+                        // x => (console.log (util.inspect (x, {
+                        //   maxArrayLength:
+                        //   1034,
+                        //   maxStringLength: 20000,
+                        //   colors: true
+                        // })), x),
+                        console.log,
                       ]))
                       (getText (options))
 
