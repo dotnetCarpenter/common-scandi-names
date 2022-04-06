@@ -1,14 +1,14 @@
+import 'normalize.css'
 import '../style.css'
 
-import { F, S }         from './sanctuary.js'
-import * as cheetahGrid from "cheetah-grid"
+import { F, S }      from './sanctuary.js'
 import {
   request,
-  preflight,
   responseToText,
   responseToHeaders
-}                       from './request.js'
-import parser           from './parser.js'
+}                    from './request.js'
+import parser        from './parser.js'
+import doT           from 'dot'
 
 const baseUrl = language => `https://raw.githubusercontent.com/OpenXcom/OpenXcom/master/bin/common/SoldierName/${language}.nam`
 const swedishUrl   = baseUrl ('Swedish')
@@ -40,13 +40,17 @@ const fetchHeaders = (
 
 //-------------- DOM code --------------
 
-const appHtml       = document.querySelector ('#app')
-const fetchButton   = appHtml.querySelector ('#fetch')
-const headersButton = appHtml.querySelector ('#head')
-const cancelButton  = appHtml.querySelector ('#cancel-fetch')
-const resultPre     = appHtml.querySelector ('#result')
-const table         = appHtml.querySelector("#table")
+const appHtml       = document.getElementById ('app')
+const fetchButton   = appHtml.querySelector   ('#fetch')
+const headersButton = appHtml.querySelector   ('#head')
+const cancelButton  = appHtml.querySelector   ('#cancel-fetch')
+const resultPre     = appHtml.querySelector   ('#result')
+const rows          = appHtml.querySelector   ("#rows")
 
+//    renderRows :: Array -> Html
+const renderRows = doT.template (document.getElementById ("rowTmpl").textContent)
+
+//    consume :: (a -> Any) -> Future e a
 const consume = F.fork (error => { resultPre.textContent = `Error: ${error}` })
 
   //  activateCancelButton :: Future String String -> Void
@@ -59,19 +63,9 @@ const activateCancelButton = f => future => (
 
 const displayNames = S.pipe ([
   parser,
-  ({ maleLast: records }) => {
-    // https://future-architect.github.io/cheetah-grid/documents/api/js/
-    new cheetahGrid.ListGrid({
-      // Parent element on which to place the grid
-      parentElement: table,
-
-      // Header definition
-      header: [
-        { field: 'name', caption: 'Last Name', width: 'auto' },
-      ],
-      // Array data to be displayed on the grid
-      records: records.map (name => ({name})),
-    })
+  ({ maleLast }) => maleLast,
+  names => {
+    rows.innerHTML = renderRows (names)
   }
 ])
 

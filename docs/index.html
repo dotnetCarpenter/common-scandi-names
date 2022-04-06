@@ -5,8 +5,8 @@
     <link rel="icon" type="image/png" href="/common-scandi-names/assets/favicon.68bb76f3.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Encapsulating Fetch</title>
-    <script type="module" crossorigin src="/common-scandi-names/assets/index.7a93a541.js"></script>
-    <link rel="stylesheet" href="/common-scandi-names/assets/index.61e9080d.css">
+    <script type="module" crossorigin src="/common-scandi-names/assets/index.46714e7e.js"></script>
+    <link rel="stylesheet" href="/common-scandi-names/assets/index.b526fad5.css">
   </head>
   <body>
     <div id="app">
@@ -29,9 +29,23 @@
         <h2>Names</h2>
         <pre id="result"></pre>
 
-        <div id="table"></div>
+        <table class="table-names">
+          <!-- <thead>
+            <tr>
+              <th>Last Names</th>
+            </tr>
+          </thead> -->
+          <tbody id="rows" rows="10"></tbody>
+        </table>
       </section>
     </div>
+
+    <script id="rowTmpl" type="text/x-dot-template">
+      {{~ it :k}}
+      <tr><td>{{=k}}</td></tr>
+      {{~}}
+    </script>
+
     
   </body>
 </html>

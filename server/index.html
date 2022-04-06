@@ -27,9 +27,23 @@
         <h2>Names</h2>
         <pre id="result"></pre>
 
-        <div id="table"></div>
+        <table class="table-names">
+          <!-- <thead>
+            <tr>
+              <th>Last Names</th>
+            </tr>
+          </thead> -->
+          <tbody id="rows" rows="10"></tbody>
+        </table>
       </section>
     </div>
+
+    <script id="rowTmpl" type="text/x-dot-template">
+      {{~ it :k}}
+      <tr><td>{{=k}}</td></tr>
+      {{~}}
+    </script>
+
     <script type="module" src="/client/main.js"></script>
   </body>
 </html>
