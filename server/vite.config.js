@@ -6,15 +6,15 @@ export default {
     outDir: '../docs',
     emptyOutDir: true,
     chunkSizeWarningLimit: 100,
-    rollupOptions: {
-      plugins: [
-        visualizer (opts => ({
-          template: 'sunburst', // sunburst|treemap|network
-          gzipSize: true,
-          open: true,
-          // sourcemap: true
-        }))
-      ]
-    }
+    // rollupOptions: {
+    //   plugins: [
+    //     visualizer (opts => ({
+    //       template: 'sunburst', // sunburst|treemap|network
+    //       gzipSize: true,
+    //       open: true,
+    //       // sourcemap: true
+    //     }))
+    //   ]
+    // }
   }
 }
