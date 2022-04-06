@@ -2,6 +2,8 @@
   --text-color: hsl(210, 29%, 24%);
   --bg-color: hsl(0, 0%, 100%);
   --text-color-visited: hsl(0, 0%, 53%);
+  --bg-color-zebra: hsl(0, 0%, 96%);
+
   font-size: 18px;
 }
 
@@ -9,6 +11,7 @@
   :root {
     --text-color: hsl(0, 0%, 93%);
     --bg-color: hsl(210, 29%, 24%);
+    --bg-color-zebra: hsl(210, 29%, 30%);
     --text-color-visited: hsl(0, 0%, 63%);
   }
 }
@@ -88,8 +91,22 @@ section {
   display: inline-block;
   width: 100%;
 }
+.table-names tr {
+  border-bottom: solid 1px #ddd;
+}
+.table-names tr:last-child {
+  border-bottom-width: 0;
+}
+.table-names th,
+.table-names td {
+  padding: 5px 10px;
+}
+.table-names tr:nth-child(even) {
+  background-color: var(--bg-color-zebra);
+}
+/* OLD TABLE STYLING */
 /* white-space: nowrap; */
-.table-names thead {
+/* .table-names thead {
   position: sticky;
   top: 0;
 
@@ -97,7 +114,7 @@ section {
   text-align: center;
 
   background-color: var(--bg-color);
-}
+} */
 /*
 tbody {
 }
@@ -132,7 +149,4 @@ th:last-child,
 td:last-child {
     border-right-width: 0;
 }
-
-tr:last-child td {
-    border-bottom-width: 0;
-} */
+ */
