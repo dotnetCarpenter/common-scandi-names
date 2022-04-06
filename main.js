@@ -10,9 +10,9 @@ import {
 
 
 const baseUrl = language => `https://raw.githubusercontent.com/OpenXcom/OpenXcom/master/bin/common/SoldierName/${language}.nam`
-const swedishUrl = baseUrl ('Swedish')
-const danishUrl  = baseUrl ('Danish')
-const norwegianUrl  = baseUrl ('Norwegian')
+const swedishUrl   = baseUrl ('Swedish')
+const danishUrl    = baseUrl ('Danish')
+const norwegianUrl = baseUrl ('Norwegian')
 
 const doPreflight = S.compose (responseToHeaders) (preflight)
 const getText     = S.compose (responseToText)    (request)

@@ -8,20 +8,27 @@
   </head>
   <body>
     <div id="app">
-      <h1>🗳️ Encapsulating Fetch</h1>
+      <h1 class="text-center">🗳️ Encapsulating Fetch</h1>
 
-      <section>
+      <section class="text-center">
         <button id="fetch">Fetch names</button>
         <button id="head">Fetch headers</button>
         <button id="cancel-fetch">Cancel Fetch</button>
       </section>
 
-      <section class="list-items">
+      <section class="text-center list-items">
         <a class="list-items__item inline-block" href="https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API" target="_blank">Fetch API documentation</a>
         <a class="list-items__item inline-block" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests" target="_blank">HTTP range requests documentation</a>
       </section>
+
       <hr>
-      <label>Result:<pre id="result"></pre></label>
+
+      <section>
+        <h2>Names</h2>
+        <pre id="result"></pre>
+
+        <div id="sample" style="height: 300px; border: solid 1px #ddd;"></div>
+      </section>
     </div>
     <script type="module" src="/client/main.js"></script>
   </body>

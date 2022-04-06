@@ -1,8 +1,5 @@
 import { S } from './sanctuary.js'
 
-// https://www.tutorialspoint.com/compiler_design/compiler_design_phases_of_compiler.htm
-// PureScript Parser example: https://github.com/Thimoteus/purescript-simple-parser/blob/master/src/Text/Parsing/Simple.purs
-
 const TOKEN = Object.freeze ({
   UNKNOWN: 0,
   TERMINAL: 1,

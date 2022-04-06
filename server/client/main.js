@@ -1,16 +1,19 @@
 import '../style.css'
 
-import { F, S } from './sanctuary.js'
+import { F, S }         from './sanctuary.js'
+import * as cheetahGrid from "cheetah-grid"
 import {
   request,
   preflight,
   responseToText,
   responseToHeaders
-}               from './request.js'
+}                       from './request.js'
+import parser           from './parser.js'
 
 const baseUrl = language => `https://raw.githubusercontent.com/OpenXcom/OpenXcom/master/bin/common/SoldierName/${language}.nam`
-const swedishUrl = baseUrl ('Swedish')
-const danishUrl  = baseUrl ('Danish')
+const swedishUrl   = baseUrl ('Swedish')
+const danishUrl    = baseUrl ('Danish')
+const norwegianUrl = baseUrl ('Norwegian')
 
 //    fetchData :: StrMap -> Future String String
 const fetchData = S.compose (responseToText)
@@ -21,7 +24,7 @@ const fetchNames = fetchData ({
   redirect: 'follow',
   url: danishUrl,
   method: 'GET',
-  headers: { range: 'bytes=0-127' }
+  // headers: { range: 'bytes=0-127' }
 })
 
 //    fetchHeaders :: Future String String
@@ -42,19 +45,44 @@ const fetchButton   = appHtml.querySelector ('#fetch')
 const headersButton = appHtml.querySelector ('#head')
 const cancelButton  = appHtml.querySelector ('#cancel-fetch')
 const resultPre     = appHtml.querySelector ('#result')
+const table         = appHtml.querySelector("#sample")
 
-//    consume :: Future String String -> Void
-const consume = future => (
+const consume = F.fork (error => { resultPre.textContent = `Error: ${error}` })
+
+  //  activateCancelButton :: Future String String -> Void
+const activateCancelButton = f => future => (
   cancelButton.onclick = (
-    F.fork (error => {
-              resultPre.textContent = `Error: ${error}`
-           })
-           (data => {
-             resultPre.textContent = data
-           })
-           (future)
+    consume (f)
+            (future)
   )
 )
 
-fetchButton  .addEventListener ('click', S.compose (S.T (fetchNames)) (S.K (consume)))
-headersButton.addEventListener ('click', S.compose (S.T (fetchHeaders)) (S.K (consume)))
+const displayNames = S.pipe ([
+  parser,
+  ({ maleLast: records }) => {
+    // https://future-architect.github.io/cheetah-grid/documents/api/
+    new cheetahGrid.ListGrid({
+      // Parent element on which to place the grid
+      parentElement: table,
+
+      // Header definition
+      header: [
+        { field: "name", caption: "Last Name", width: table.clientWidth - 34 },
+      ],
+      // Array data to be displayed on the grid
+      records: records.map (name => ({name})),
+    })
+  }
+])
+
+const displayHeaders = data => {
+  resultPre.textContent = data
+}
+
+fetchButton.addEventListener ('click', () => {
+  activateCancelButton (displayNames) (fetchNames)
+})
+
+headersButton.addEventListener ('click', () => {
+  activateCancelButton (displayHeaders) (fetchHeaders)
+})
