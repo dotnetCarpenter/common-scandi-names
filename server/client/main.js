@@ -45,7 +45,7 @@ const fetchButton   = appHtml.querySelector ('#fetch')
 const headersButton = appHtml.querySelector ('#head')
 const cancelButton  = appHtml.querySelector ('#cancel-fetch')
 const resultPre     = appHtml.querySelector ('#result')
-const table         = appHtml.querySelector("#sample")
+const table         = appHtml.querySelector("#table")
 
 const consume = F.fork (error => { resultPre.textContent = `Error: ${error}` })
 
@@ -60,14 +60,14 @@ const activateCancelButton = f => future => (
 const displayNames = S.pipe ([
   parser,
   ({ maleLast: records }) => {
-    // https://future-architect.github.io/cheetah-grid/documents/api/
+    // https://future-architect.github.io/cheetah-grid/documents/api/js/
     new cheetahGrid.ListGrid({
       // Parent element on which to place the grid
       parentElement: table,
 
       // Header definition
       header: [
-        { field: "name", caption: "Last Name", width: table.clientWidth - 34 },
+        { field: 'name', caption: 'Last Name', width: 'auto' },
       ],
       // Array data to be displayed on the grid
       records: records.map (name => ({name})),

@@ -65,3 +65,14 @@ section {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+#table {
+  height: 300px;
+
+  border: solid 1px #ddd;
+}
+
+.cheetah-grid .grid-scrollable {
+  overflow-x: hidden!important;
+  overflow-y: auto!important;
+}
