@@ -32,8 +32,7 @@ const cancel = F.fork (console.error)
                         // x => (console.error (util.inspect (x)), x),
                         parser,
                         // x => (console.log (util.inspect (x, {
-                        //   maxArrayLength:
-                        //   1034,
+                        //   maxArrayLength: 1034,
                         //   maxStringLength: 20000,
                         //   colors: true
                         // })), x),
