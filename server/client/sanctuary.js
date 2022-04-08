@@ -32,7 +32,7 @@ const $PointerEvent = $.NullaryType
 
 const S = sanctuary.create ({
 	checkTypes: false,
-  env: sanctuary.env.concat (flutureEnv).concat ([
+  env: sanctuary.env.concat (flutureEnv, [
     $Event,
     $Response,
     $Headers,

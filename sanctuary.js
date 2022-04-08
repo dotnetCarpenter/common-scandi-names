@@ -21,7 +21,7 @@ const $Headers = $.NullaryType
 
 
 const S = sanctuary.create ({
-	checkTypes: false,
+	checkTypes: true,
   env: sanctuary.env.concat (flutureEnv).concat ([
     $Response,
     $Headers

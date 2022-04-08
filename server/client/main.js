@@ -10,6 +10,8 @@ import {
 import parser        from './parser.js'
 import doT           from 'dot'
 
+
+
 const baseUrl = language => `https://raw.githubusercontent.com/OpenXcom/OpenXcom/master/bin/common/SoldierName/${language}.nam`
 const swedishUrl   = baseUrl ('Swedish')
 const danishUrl    = baseUrl ('Danish')
@@ -79,31 +81,26 @@ const padArray = pad => n =>
 //    sameLength :: Array (Array String) -> Array (Array String)
 const sameLength = S.ap (S.flip (padArray ('&nbsp;'))) (max)
 
-//    partition :: Array (Array a) -> Array (Array a)
-const partition = (arrays, accu = []) => {
-  if (arrays[0].length === 0) return accu
+//    zip3 :: Array a -> Array a -> Array a -> Array (Array a)
+const zip3 = a1 => a2 => a3 => (
+  S.zipWith
+    (a => b => [a, ...b])
+    (a1)
+    (S.zipWith (a => b => [a, b])
+               (a2)
+               (a3))
+)
 
-  const part = []
-  for (var i = 0; i < arrays.length; ++i) {
-    part.push (arrays[i].splice (0, 1)[0])
-  }
-
-  accu.push (part)
-
-  return partition (arrays, accu)
-}
-
-//    displayNames :: String -> Void
+//    displayNames :: Array String -> Void
 const displayNames = S.pipe ([
+  // TODO: S.prop ('maleLast') is not safe use S.get :: Maybe String instead
   S.map (S.pipe ([parser, S.prop ('maleLast'), S.sort])),
 
   sameLength,
 
-  partition,
+  as => zip3 (as[0]) (as[1]) (as[2]),
 
   names => {
-    // debugger
-    // names = [[1,2,3], [4,5,6], [7,8,9]]
     rows.innerHTML = renderRows (names)
   }
 ])

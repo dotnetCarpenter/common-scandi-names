@@ -1,8 +1,10 @@
 :root {
   --text-color: hsl(210, 29%, 24%);
   --bg-color: hsl(0, 0%, 100%);
-  --text-color-visited: hsl(0, 0%, 53%);
   --bg-color-zebra: hsl(0, 0%, 96%);
+  --text-color-visited: hsl(0, 0%, 53%);
+
+  --border: solid 1px #ddd;
 
   --content-margin: 5rem;
 
@@ -15,12 +17,15 @@
     --bg-color: hsl(210, 29%, 24%);
     --bg-color-zebra: hsl(210, 29%, 30%);
     --text-color-visited: hsl(0, 0%, 63%);
+
+    --border: solid 1px #ddd;
   }
 }
 
 @media screen and (max-width: 600px) {
   :root {
     --content-margin: 1rem;
+    --flex-direction: column;
   }
 }
 
@@ -56,6 +61,16 @@ section {
 .inline-block {
   display: inline-block;
 }
+
+.flex {
+  display: flex;
+  flex-direction: var(--flex-direction, row);
+  gap: 1rem;
+}
+.flex-center {
+  justify-content: space-evenly;
+}
+
 .text-center {
   text-align: center;
 }
@@ -86,7 +101,7 @@ section {
   height: 300px;
   width: 100%;
 
-  border: solid 1px #ddd;
+  border: var(--border);
 
   overflow-x: auto;
   overflow-y: scroll;
@@ -104,13 +119,13 @@ section {
   width: calc(100% / 3 );
 }
 .table-names td {
-  border-right: solid 1px #ddd;
+  border-right: var(--border);
 }
 .table-names td:last-child {
   border-right: none;
 }
 .table-names tr {
-  border-bottom: solid 1px #ddd;
+  border-bottom: var(--border);
 }
 .table-names tr:last-child:not(:has(> thead)) {
   border-bottom-width: 0;
