@@ -28,10 +28,24 @@ const sameLength = S.pipe ([
   timeEnd ('sameLength')
 ])
 
-//    padArray :: a -> Integer -> Array a -> Array a
-const padArray = pad => n => (
-  S.map (array => array.concat (Array.from (new Array (n - array.length)).fill (pad)))
-)
+// [[1,1,1],[2,2,2],[3,3,3]] -> [[1,2,3],[1,2,3],[1,2,3]]
+const partition = (arrays, accu = []) => {
+  if (arrays[0].length === 0) return accu
+
+  const part = []
+  for (var i = 0; i < arrays.length; ++i) {
+    part.push (arrays[i].splice (0, 1)[0])
+  }
+
+  accu.push (part)
+
+  return partition (arrays, accu)
+}
+
+//    padArray :: a -> Integer -> Array (Array a) -> Array (Array a)
+const padArray = pad => n =>
+  S.map (array =>
+    array.concat (Array.from (new Array (n - array.length)).fill (pad)))
 
 //    sameLength_ :: Array (Array String) -> Array (Array String)
 const sameLength_ = S.pipe ([
@@ -57,8 +71,15 @@ const print = S.pipe ([
   console.log
 ])
 
-const result2 = sameLength_ (names)
-// print (result2)
+// const result1 = sameLength (S.Pair (0) (names))
+// // print (result1)
 
-const result1 = sameLength (S.Pair (0) (names))
-// print (result1)
+// const result2 = sameLength_ (names)
+// // print (result2)
+
+// console.log (partition ([[1,1,1],[2,2,2],[3,3,3]]))
+
+console.time ('partition')
+const result3 = partition (sameLength_ (names))
+console.timeEnd ('partition')
+// print (result3)

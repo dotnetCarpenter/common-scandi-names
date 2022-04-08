@@ -68,12 +68,42 @@ const activateCancelButton = f => futures => (
   )
 )
 
+//    max :: Array (Array a) -> Integer
+const max = S.compose (ns => Math.max (...ns)) (S.map (S.size))
+
+//    padArray :: a -> Integer -> Array (Array a) -> Array (Array a)
+const padArray = pad => n =>
+  S.map (array =>
+    array.concat (Array.from (new Array (n - array.length)).fill (pad)))
+
+//    sameLength :: Array (Array String) -> Array (Array String)
+const sameLength = S.ap (S.flip (padArray ('&nbsp;'))) (max)
+
+//    partition :: Array (Array a) -> Array (Array a)
+const partition = (arrays, accu = []) => {
+  if (arrays[0].length === 0) return accu
+
+  const part = []
+  for (var i = 0; i < arrays.length; ++i) {
+    part.push (arrays[i].splice (0, 1)[0])
+  }
+
+  accu.push (part)
+
+  return partition (arrays, accu)
+}
+
 //    displayNames :: String -> Void
 const displayNames = S.pipe ([
-  S.map (S.pipe ([parser, S.prop ('maleLast')])),
-  // S.reduce (partition => ) ([]),
+  S.map (S.pipe ([parser, S.prop ('maleLast'), S.sort])),
+
+  sameLength,
+
+  partition,
+
   names => {
-    debugger
+    // debugger
+    // names = [[1,2,3], [4,5,6], [7,8,9]]
     rows.innerHTML = renderRows (names)
   }
 ])
