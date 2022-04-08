@@ -29,6 +29,24 @@
   }
 }
 
+@media screen and (max-width: 405px) {
+  :root {
+    font-size: 16px;
+  }
+}
+
+@media screen and (max-width: 315px) {
+  :root {
+    font-size: 14px;
+  }
+}
+
+@media screen and (max-width: 280px) {
+  :root {
+    font-size: 13px;
+  }
+}
+
 * {
   box-sizing: border-box;
 }
