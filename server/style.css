@@ -25,12 +25,12 @@
 @media screen and (max-width: 600px) {
   :root {
     --content-margin: 1rem;
-    --flex-direction: column;
   }
 }
 
 @media screen and (max-width: 405px) {
   :root {
+    --flex-direction: column;
     font-size: 16px;
   }
 }
@@ -150,7 +150,7 @@ section {
 }
 .table-names th,
 .table-names td {
-  padding: 5px 10px;
+  padding: .3rem .6rem;
 }
 .table-names tr:nth-child(even) {
   background-color: var(--bg-color-zebra);
