@@ -19,13 +19,20 @@ const norwegianUrl = baseUrl ('Norwegian')
 const fetchData = S.compose (responseToText)
                             (request)
 
-//    fetchNames :: Future String String
-const fetchNames = fetchData ({
+const options = {
   redirect: 'follow',
-  url: danishUrl,
   method: 'GET',
   // headers: { range: 'bytes=0-127' }
-})
+}
+
+//    fetchDanishNames :: Future String String
+const fetchDanishNames = fetchData (Object.assign ({url: danishUrl}, options))
+
+//    fetchSwedishNames :: Future String String
+const fetchSwedishNames = fetchData (Object.assign ({url: swedishUrl}, options))
+
+//    fetchNorwegianNames :: Future String String
+const fetchNorwegianNames = fetchData (Object.assign ({url: norwegianUrl}, options))
 
 //    fetchHeaders :: Future String String
 const fetchHeaders = (
@@ -53,30 +60,37 @@ const renderRows = doT.template (document.getElementById ("rowTmpl").textContent
 //    consume :: (a -> Any) -> Future e a
 const consume = F.fork (error => { resultPre.textContent = `Error: ${error}` })
 
-  //  activateCancelButton :: Future String String -> Void
-const activateCancelButton = f => future => (
+  //  activateCancelButton :: Array (Future String String) -> Void
+const activateCancelButton = f => futures => (
   cancelButton.onclick = (
     consume (f)
-            (future)
+            (F.parallel (3) (futures))
   )
 )
 
+//    displayNames :: String -> Void
 const displayNames = S.pipe ([
-  parser,
-  ({ maleLast }) => maleLast,
+  S.map (S.pipe ([parser, S.prop ('maleLast')])),
+  // S.reduce (partition => ) ([]),
   names => {
+    debugger
     rows.innerHTML = renderRows (names)
   }
 ])
 
+//    displayHeaders :: String -> Void
 const displayHeaders = data => {
   resultPre.textContent = data
 }
 
 fetchButton.addEventListener ('click', () => {
-  activateCancelButton (displayNames) (fetchNames)
+  activateCancelButton (displayNames) ([
+    fetchDanishNames,
+    fetchSwedishNames,
+    fetchNorwegianNames
+  ])
 })
 
 headersButton.addEventListener ('click', () => {
-  activateCancelButton (displayHeaders) (fetchHeaders)
+  activateCancelButton (displayHeaders) ([fetchHeaders])
 })

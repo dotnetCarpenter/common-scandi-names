@@ -84,17 +84,21 @@ section {
   overflow-y: scroll;
 }
 .table-names td,
-.table-names tr,
 .table-names th,
+.table-names tr,
 .table-names thead,
 .table-names tbody {
   display: inline-block;
   width: 100%;
 }
+.table-names td,
+.table-names th {
+  width: calc(100% / 3 );
+}
 .table-names tr {
   border-bottom: solid 1px #ddd;
 }
-.table-names tr:last-child {
+.table-names tr:last-child:not(:has(> thead)) {
   border-bottom-width: 0;
 }
 .table-names th,

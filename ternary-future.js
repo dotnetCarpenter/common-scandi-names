@@ -1,5 +1,6 @@
 import { S, F } from './sanctuary.js'
 
+// const trace = msg => x => (console.warn (msg, x), x)
 
 const failureResponse = url => ({
   ok: false,
@@ -16,28 +17,39 @@ const successResponse = url => ({
   }
 })
 
-// const mockFetch = url => { throw new Error (url) }
-const mockFetch = url => Promise.resolve (failureResponse (url))
-// const mockFetch = url => Promise.resolve (successResponse (url))
+//    fetchException :: String -> Throws e
+const fetchException = url => { throw new Error (url) }
+//    fetchReject    :: String -> Promise Response a
+const fetchReject    = url => Promise.reject (failureResponse (url))
+//    fetchFail      :: String -> Promise a Response
+const fetchFail      = url => Promise.resolve (failureResponse (url))
+//    fetchSuccess   :: String -> Promise a Response
+const fetchSuccess   = url => Promise.resolve (successResponse (url))
 
-//    tagByF :: (a -> Boolean) -> a -> Future a a
-const tagByF = f => x => f (x)
-  ? F.resolve (x)
-  : F.reject  (x)
+//    responseHandler :: Future Response Response -> Future String String
+const responseHandler = S.pipe ([
+  S.map (S.tagBy (S.prop ('ok'))),
 
-//    request :: String -> Future e a
-const request = S.pipe ([
-  F.encaseP (mockFetch),
-  S.chain (tagByF (S.prop ('ok'))),
-  F.coalesce (response => F.reject (`HTTP error! status: ${response.status}`))
-             (F.encaseP (response => response.text ())),
+  F.map (
+    S.either (response => F.reject (`HTTP error! status: ${response.status}`))
+             (F.encaseP (response => (response.text ())))
+  ),
+
   S.join,
 ])
 
-F.fork (console.error.bind (console, 'Error:'))
-       (console.log.bind (console, 'Success:'))
-       (request ('this is my URL'))
+//    executeAndLog :: Future e a -> Void
+const executeAndLog = (
+  F.forkCatch (e => console.error (`Fatal Error: ${e.message}\n${e.stack}`))
+              (console.error.bind (console, 'Error:'))
+              (console.log.bind (console, 'Success:'))
+)
 
+executeAndLog (responseHandler (F.encaseP (fetchFail) ('this is my URL')))
+// NOTE: fetchReject should not happen in the real world and it will bypass `responseHandler` entirely
+executeAndLog (responseHandler (F.encaseP (fetchReject) ('this is my URL')))
+executeAndLog (responseHandler (F.encaseP (fetchSuccess) ('this is my URL')))
+executeAndLog (responseHandler (F.encaseP (fetchException) ('this is my URL')))
 
 // console.debug (
 //   request ('this is my URL')
