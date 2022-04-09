@@ -11,7 +11,6 @@ import parser        from './parser.js'
 import doT           from 'dot'
 
 
-
 const baseUrl = language => `https://raw.githubusercontent.com/OpenXcom/OpenXcom/master/bin/common/SoldierName/${language}.nam`
 const swedishUrl   = baseUrl ('Swedish')
 const danishUrl    = baseUrl ('Danish')
@@ -47,21 +46,6 @@ const fetchHeaders = (
             })
 )
 
-//-------------- DOM code --------------
-
-const appHtml       = document.getElementById ('app')
-const fetchButton   = appHtml.querySelector   ('#fetch')
-const headersButton = appHtml.querySelector   ('#head')
-const cancelButton  = appHtml.querySelector   ('#cancel-fetch')
-const resultPre     = appHtml.querySelector   ('#result')
-const rows          = appHtml.querySelector   ("#rows")
-
-//    renderRows :: Array -> Html
-const renderRows = doT.template (document.getElementById ("rowTmpl").textContent)
-
-//    consume :: (a -> Any) -> Future e a
-const consume = F.fork (error => { resultPre.textContent = `Error: ${error}` })
-
 //    max :: Array (Array a) -> Integer
 const max = S.compose (ns => Math.max (...ns)) (S.map (S.size))
 
@@ -83,6 +67,18 @@ const zip3 = a1 => a2 => a3 => (
                (a3))
 )
 
+//-------------- DOM code --------------
+
+const appHtml       = document.getElementById ('app')
+const fetchButton   = appHtml.querySelector   ('#fetch')
+const headersButton = appHtml.querySelector   ('#head')
+const cancelButton  = appHtml.querySelector   ('#cancel-fetch')
+const resultPre     = appHtml.querySelector   ('#result')
+const rows          = appHtml.querySelector   ("#rows")
+
+//    renderRows :: Array -> Html
+const renderRows = doT.template (document.getElementById ("rowTmpl").textContent)
+
 //    displayNames :: Array String -> Void
 const displayNames = S.pipe ([
   // TODO: S.prop ('maleLast') is not safe use S.get :: Maybe String instead
@@ -101,6 +97,12 @@ const displayNames = S.pipe ([
 const displayHeaders = data => {
   resultPre.textContent = data
 }
+
+//    consume :: (a -> Any) -> Future e a
+const consume = (
+  F.forkCatch (e => resultPre.textContent = `Fatal Error: ${e.message}\n${e.stack}`)
+              (error => { resultPre.textContent = `Error: ${error}` })
+)
 
 //  activateCancelButton :: Array (Future String String) -> Void
 const activateCancelButton = f => futures => (

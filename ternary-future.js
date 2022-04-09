@@ -30,7 +30,7 @@ const fetchSuccess   = url => Promise.resolve (successResponse (url))
 const responseHandler = S.pipe ([
   S.map (S.tagBy (S.prop ('ok'))),
 
-  F.map (
+  S.map (
     S.either (response => F.reject (`HTTP error! status: ${response.status}`))
              (F.encaseP (response => (response.text ())))
   ),
