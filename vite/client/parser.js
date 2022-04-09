@@ -1,7 +1,5 @@
 import { S } from './sanctuary.js'
 
-const trace = msg => x => (console.debug (msg, x), x)
-
 const TOKEN = Object.freeze ({
   UNKNOWN: 0,
   TERMINAL: 1,
@@ -74,9 +72,11 @@ const lexer = S.pipe ([
   // TODO: syntax validation? E.i. Parent must come before child
 ])
 
+const fst = a => a[0]
+
 //    parse :: Pair -> Token
 const parse = pair => token => {
-  let ast = S.fst (pair), parent = S.snd (pair)
+  let ast = fst (pair), parent = pair[1]
 
   switch (token.type) {
     case TOKEN.PARENT:
@@ -89,15 +89,13 @@ const parse = pair => token => {
       // skip token
   }
 
-  return S.Pair (ast) (parent)
+  return [ast, parent]
 }
 
 //    parser :: Array Token -> Ast
 const parser = S.pipe ([
-  // S.reduce (parse) (S.Pair ({}) ([])), FIXME: {} and [] is reused for next pass which breaks parsing
-  tokens => S.reduce (parse) (S.Pair ({}) ([])) (tokens), // lame fix
-  // trace ('PARSER'),
-  S.fst
+  S.reduce (parse) ([{},[]]),
+  fst
 ])
 
 export default S.compose (parser) (lexer)
