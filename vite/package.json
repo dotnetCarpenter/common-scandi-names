@@ -19,8 +19,10 @@
     "sanctuary-either": "sanctuary-js/sanctuary-either#18f6238f1d1e8e36d3dcdb44732255b3349eef46",
     "sanctuary-maybe": "sanctuary-js/sanctuary-maybe#2d14d53f939c0a81e081d93dc4bda5622ca517a1",
     "sanctuary-pair": "sanctuary-js/sanctuary-pair#829187679afceec52e889f884bdc6e9b0c0d0a18",
-    "sanctuary-show": "^3.0.0",
-    "sanctuary-type-classes": "sanctuary-js/sanctuary-type-classes#30d0a3258b8f03caf7d1e650d1cb7a3b1c6c9040"
+    "sanctuary-show": "^3.0.0"
+  },
+  "overrides": {
+    "sanctuary-type-classes": "^13.0.0"
   },
   "devDependencies": {
     "rollup-plugin-visualizer": "^5.6.0",
