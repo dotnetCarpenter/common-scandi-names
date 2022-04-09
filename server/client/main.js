@@ -62,14 +62,6 @@ const renderRows = doT.template (document.getElementById ("rowTmpl").textContent
 //    consume :: (a -> Any) -> Future e a
 const consume = F.fork (error => { resultPre.textContent = `Error: ${error}` })
 
-  //  activateCancelButton :: Array (Future String String) -> Void
-const activateCancelButton = f => futures => (
-  cancelButton.onclick = (
-    consume (f)
-            (F.parallel (3) (futures))
-  )
-)
-
 //    max :: Array (Array a) -> Integer
 const max = S.compose (ns => Math.max (...ns)) (S.map (S.size))
 
@@ -109,6 +101,14 @@ const displayNames = S.pipe ([
 const displayHeaders = data => {
   resultPre.textContent = data
 }
+
+//  activateCancelButton :: Array (Future String String) -> Void
+const activateCancelButton = f => futures => (
+  cancelButton.onclick = (
+    consume (f)
+            (F.parallel (3) (futures))
+  )
+)
 
 fetchButton.addEventListener ('click', () => {
   activateCancelButton (displayNames) ([
