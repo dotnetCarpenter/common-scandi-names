@@ -22,31 +22,6 @@
   }
 }
 
-@media screen and (max-width: 600px) {
-  :root {
-    --content-margin: 1rem;
-  }
-}
-
-@media screen and (max-width: 405px) {
-  :root {
-    --flex-direction: column;
-    font-size: 16px;
-  }
-}
-
-@media screen and (max-width: 315px) {
-  :root {
-    font-size: 14px;
-  }
-}
-
-@media screen and (max-width: 280px) {
-  :root {
-    font-size: 13px;
-  }
-}
-
 * {
   box-sizing: border-box;
 }
@@ -55,6 +30,9 @@ body {
   background-color: var(--bg-color);
 
   color: var(--text-color);
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 a {
@@ -93,6 +71,11 @@ section {
   text-align: center;
 }
 
+.margin-5 {
+  margin: var(--content-margin) var(--content-margin) 0;
+}
+
+
 .list-items {
   width: max-content;
   margin-inline: auto;
@@ -106,18 +89,11 @@ section {
   display: list-item;
 }
 
-#app {
-  margin: var(--content-margin) var(--content-margin) 0;
-
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
 .table-names {
   display: inline-block;
-  height: 300px;
+  height: 300px; /* fix with a proper layout */
   width: 100%;
+  /* min-width: 280px; make sure the table does not get too small on mobile */
 
   border: var(--border);
 
@@ -155,7 +131,7 @@ section {
 .table-names tr:nth-child(even) {
   background-color: var(--bg-color-zebra);
 }
-thead {
+.table-names thead {
   position: sticky;
   top: 0;
 
@@ -165,39 +141,33 @@ thead {
   background-color: var(--bg-color);
   border: none;
 }
-/* OLD TABLE STYLING */
-/* white-space: nowrap; */
-/* .table-names thead {
-  position: sticky;
-  top: 0;
 
-  vertical-align: bottom;
-  text-align: center;
-
-  background-color: var(--bg-color);
-} */
-/*
-tbody {
-}
-th,
-td {
-    padding: 5px 10px;
-    border-top-width: 0;
-    border-left-width: 0;
-    border-bottom: solid 1px #ddd;
-}
-thead,
-thead tr,
-th {
-  display: inline-block;
-  width: 100%;
-}
-tbody {
-  width: 100%;
+@media screen and (max-width: 600px) {
+  :root {
+    --content-margin: 1rem;
+  }
 }
 
-th:last-child,
-td:last-child {
-    border-right-width: 0;
+@media screen and (max-width: 405px) {
+  :root {
+    --flex-direction: column;
+    font-size: 16px;
+  }
 }
- */
+
+@media screen and (max-width: 315px) {
+  :root {
+    font-size: 14px;
+  }
+
+  .sm\:w-screen {
+    width: 100vw;
+    margin-left: -1rem;
+  }
+}
+
+@media screen and (max-width: 280px) {
+  :root {
+    font-size: 13px;
+  }
+}
