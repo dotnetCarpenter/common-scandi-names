@@ -1,6 +1,7 @@
+// @ts-check
+
 import { S, F } from './sanctuary.js'
 import fetch    from 'node-fetch'
-
 
 //    request :: StrMap -> Future e a
 const request = ({url, ...options}) => F.Future ((reject, resolve) => {
@@ -54,6 +55,14 @@ const responseToText = S.pipe ([
   S.join,
 ])
 
+//    responseToStream :: Future e Response -> Future e ReadableStream
+const responseToStream = S.pipe ([
+  S.map (S.tagBy (S.prop ('ok'))),
+  S.map (S.either (F.reject)
+                  (S.compose (F.resolve) (S.prop ('body')))),
+  S.join,
+])
+
 //    responseToHeaders :: Future e Response -> Future String String
 const responseToHeaders = S.pipe ([
   S.map (S.tagBy (S.prop ('ok'))),
@@ -69,6 +78,7 @@ export default S.compose (responseToText)
 export {
   request,
   preflight,
+  responseToStream,
   responseToText,
   responseToHeaders
 }

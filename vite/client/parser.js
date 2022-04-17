@@ -68,13 +68,12 @@ const lines = s => s === ''
 const lexer = S.pipe ([
   lines,
   S.array ([createToken ('') (TOKEN.UNKNOWN)]) (tokenize),
-  // trace ('TOKENIZER'),
   // TODO: syntax validation? E.i. Parent must come before child
 ])
 
+//    fst :: Array a -> a
 const fst = a => a[0]
 
-//    parse :: Pair -> Token
 const parse = pair => token => {
   let ast = fst (pair), parent = pair[1]
 

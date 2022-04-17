@@ -7,6 +7,9 @@
 		"sanctuary": "^3.1.0"
 	},
 	"devDependencies": {
-		"node-fetch": "^3.2.3"
+		"@types/sanctuary": "^3.0.3",
+		"lazy-do": "^0.0.1",
+		"node-fetch": "^3.2.3",
+		"sanctuary-identity": "^2.1.0"
 	}
 }

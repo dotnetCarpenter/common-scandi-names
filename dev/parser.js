@@ -1,7 +1,11 @@
+// @ts-check
+
 import { S } from './sanctuary.js'
 
 // https://www.tutorialspoint.com/compiler_design/compiler_design_phases_of_compiler.htm
 // PureScript Parser example: https://github.com/Thimoteus/purescript-simple-parser/blob/master/src/Text/Parsing/Simple.purs
+
+const trace = msg => x => (console.debug (msg, x), x)
 
 const TOKEN = Object.freeze ({
   UNKNOWN: 0,
@@ -21,8 +25,8 @@ const createToken = x => type => ({
   type: type
 })
 
-//    matcher :: RegEx -> String -> Boolean|String
-const matcher = regex => string => regex.test(string) && string
+//    matcher :: RegExp -> a -> a
+const matcher = regex => a => regex.test(a) && a
 
 const parentMatcher = matcher (/\w+:\n$/)
 
@@ -33,7 +37,10 @@ const dashMatcher = matcher (/\s{2}-\s\w+/)
 const nameMatcher = matcher (/^\p{L}+\n$/u)
 
 //    tokenize :: String -> Array Token
-const tokenize = string => (tail, tokens = []) => {
+const tokenize = string => (
+  tail,
+  /** @type {({value:any,type:number})[]} */
+  tokens = []) => {
   if (!string) return tokens
 
   let token
@@ -67,16 +74,33 @@ const lines = s => s === ''
   ? []
   : (s.replace (/\r\n?/g, '\n')).match (/^(?=[\s\S]).*\n?/gm)
 
+function* readline (chunk) {
+  let index = 0
+  let currentIndex = 0
+
+  while (true) {
+    if (chunk[currentIndex] === '\n') {
+      yield [chunk.slice (index, currentIndex)]
+      index = currentIndex
+    }
+    ++currentIndex
+  }
+}
+
 //    lexer :: String -> Array Token
 const lexer = S.pipe ([
+  trace ('before lines'),
   lines,
+  trace ('after lines'),
   S.array ([createToken ('') (TOKEN.UNKNOWN)]) (tokenize),
   // TODO: syntax validation? E.i. Parent must come before child
 ])
 
-//    parse :: Pair -> Token
+//    fst :: Array a -> a
+const fst = a => a[0]
+
 const parse = pair => token => {
-  let ast = S.fst (pair), parent = S.snd (pair)
+  let ast = fst (pair), parent = pair[1]
 
   switch (token.type) {
     case TOKEN.PARENT:
@@ -89,13 +113,13 @@ const parse = pair => token => {
       // skip token
   }
 
-  return S.Pair (ast) (parent)
+  return [ast, parent]
 }
 
 //    parser :: Array Token -> Ast
 const parser = S.pipe ([
-  S.reduce (parse) (S.Pair ({}) ([])),
-  S.fst
+  S.reduce (parse) ([{},[]]),
+  fst
 ])
 
 export default S.compose (parser) (lexer)

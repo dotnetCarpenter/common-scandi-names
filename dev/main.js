@@ -1,19 +1,29 @@
+// @ts-check
+
 import util     from 'util'
 import { S, F } from './sanctuary.js'
 import parser   from './parser.js'
 import {
   request,
   preflight,
+  responseToStream,
   responseToText,
   responseToHeaders
 }               from './request.js'
 
+/**
+ * @template L,R
+ * @typedef { import("fluture").FutureInstance<L,R> } Future
+ */
+
+const trace = msg => x => (console.debug (msg, x), x)
 
 const baseUrl = language => `https://raw.githubusercontent.com/OpenXcom/OpenXcom/master/bin/common/SoldierName/${language}.nam`
 
 const doPreflight = S.compose (responseToHeaders) (preflight)
 const getText     = S.compose (responseToText)    (request)
 const getHeaders  = S.compose (responseToHeaders) (request)
+const getStream   = S.compose (responseToStream)  (request)
 
 const options = url => ({
   redirect: 'follow',
@@ -24,8 +34,13 @@ const options = url => ({
   // }
 })
 
+
+
+/** @type { Future<string, string> } */
 const fetchDanishNames = getText (options (baseUrl ('Danish')))
+/** @type { Future<string, string> } */
 const fetchSwedishNames = getText (options (baseUrl ('Swedish')))
+/** @type { Future<string, string> } */
 const fetchNorwegianNames = getText (options (baseUrl ('Norwegian')))
 
 //    max :: Array (Array a) -> Integer
@@ -49,23 +64,31 @@ const zip3 = a1 => a2 => a3 => (
                (a3))
 )
 
+const print = x => (console.log (util.inspect (x, {
+  maxArrayLength: 1034,
+  maxStringLength: 20000,
+  colors: true
+})), x)
+
+const timeStart = tag => x => (console.time (tag), x)
+const timeEnd   = tag => x => (console.timeEnd (tag), x)
+
 const cancel = (
   F.forkCatch (e => console.error (`Fatal Error: ${e.message}\n${e.stack}`))
               (console.error)
-              (S.pipe ([
-// TODO: S.prop ('maleLast') is not safe use S.get :: Maybe String instead
-                S.map (S.pipe ([parser, S.prop ('maleLast'), S.sort])),
-                sameLength,
-                as => zip3 (as[0]) (as[1]) (as[2]),
+              (S.map (S.pipe ([
+                timeStart ('parser'),
+                parser,
+                timeEnd ('parser')
+              ])))
 
-                x => (console.log (util.inspect (x, {
-                  maxArrayLength: 1034,
-                  maxStringLength: 20000,
-                  colors: true
-                })), x),
-                // JSON.stringify,
-                // console.log,
-              ]))
+// TODO: S.prop ('maleLast') is not safe use S.get :: Maybe String instead
+                // S.map (S.pipe ([parser, S.prop ('maleLast'), S.sort])),
+                // sameLength,
+                // as => zip3 (as[0]) (as[1]) (as[2]),
+
+                // print,
+              // ]))
               (F.parallel (3)
                           ([
                             fetchDanishNames,
