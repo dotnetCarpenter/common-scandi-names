@@ -1,6 +1,5 @@
-// @ts-check
-
 import util     from 'util'
+import Identity from 'sanctuary-identity'
 import { S, F } from './sanctuary.js'
 import parser   from './parser.js'
 import {
@@ -15,33 +14,6 @@ import {
  * @template L,R
  * @typedef { import("fluture").FutureInstance<L,R> } Future
  */
-
-const trace = msg => x => (console.debug (msg, x), x)
-
-const baseUrl = language => `https://raw.githubusercontent.com/OpenXcom/OpenXcom/master/bin/common/SoldierName/${language}.nam`
-
-const doPreflight = S.compose (responseToHeaders) (preflight)
-const getText     = S.compose (responseToText)    (request)
-const getHeaders  = S.compose (responseToHeaders) (request)
-const getStream   = S.compose (responseToStream)  (request)
-
-const options = url => ({
-  redirect: 'follow',
-  url: url,
-  method: 'GET',
-  // headers: {
-  //   range: 'bytes=0-256'
-  // }
-})
-
-
-
-/** @type { Future<string, string> } */
-const fetchDanishNames = getText (options (baseUrl ('Danish')))
-/** @type { Future<string, string> } */
-const fetchSwedishNames = getText (options (baseUrl ('Swedish')))
-/** @type { Future<string, string> } */
-const fetchNorwegianNames = getText (options (baseUrl ('Norwegian')))
 
 //    max :: Array (Array a) -> Integer
 const max = S.compose (ns => Math.max (...ns)) (S.map (S.size))
@@ -64,6 +36,39 @@ const zip3 = a1 => a2 => a3 => (
                (a3))
 )
 
+const trace = msg => x => (console.debug (msg, x), x)
+
+const baseUrl = language => `https://raw.githubusercontent.com/OpenXcom/OpenXcom/master/bin/common/SoldierName/${language}.nam`
+
+const doPreflight = S.compose (responseToHeaders) (preflight)
+const getText     = S.compose (responseToText)    (request)
+const getHeaders  = S.compose (responseToHeaders) (request)
+const getStream   = S.compose (responseToStream)  (request)
+
+
+const options = url => ({
+  redirect: 'follow',
+  url: url,
+  method: 'GET',
+  // headers: {
+  //   range: 'bytes=0-256'
+  // }
+})
+
+const fetchDanishNames = getStream (options (baseUrl ('Danish')))
+const fetchSwedishNames = getStream (options (baseUrl ('Swedish')))
+const fetchNorwegianNames = getStream (options (baseUrl ('Norwegian')))
+
+// String -> baseUrl -> options -> request -> responseToText -> parallel -> parser - get/sort -> print
+
+const endpoints = (['Danish', 'Swedish', 'Norwegian'])
+
+// getText -> endpoints -> parallel -> parser -> ~prop~get/sort ~> print
+// getHeaders -> endpoints -> parallel ~> print
+// getStream -> endpoints -> parallel -> parser -> ~prop~get/sort ~> print
+// doPreflight -> endpoints -> parallel ~> print
+// preprint :: sameLength -> zip3
+
 const print = x => (console.log (util.inspect (x, {
   maxArrayLength: 1034,
   maxStringLength: 20000,
@@ -76,19 +81,18 @@ const timeEnd   = tag => x => (console.timeEnd (tag), x)
 const cancel = (
   F.forkCatch (e => console.error (`Fatal Error: ${e.message}\n${e.stack}`))
               (console.error)
-              (S.map (S.pipe ([
-                timeStart ('parser'),
-                parser,
-                timeEnd ('parser')
-              ])))
-
-// TODO: S.prop ('maleLast') is not safe use S.get :: Maybe String instead
-                // S.map (S.pipe ([parser, S.prop ('maleLast'), S.sort])),
-                // sameLength,
-                // as => zip3 (as[0]) (as[1]) (as[2]),
-
-                // print,
-              // ]))
+              (S.pipe ([
+                S.map (S.pipe ([
+                  timeStart ('parser'),
+                  parser,
+                  timeEnd ('parser'),
+                  S.prop ('maleLast'), // TODO: not safe use S.get :: Maybe String instead
+                  S.sort
+                ])),
+                sameLength,
+                as => zip3 (as[0]) (as[1]) (as[2]),
+                print,
+              ]))
               (F.parallel (3)
                           ([
                             fetchDanishNames,

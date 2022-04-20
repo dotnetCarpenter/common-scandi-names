@@ -1,7 +1,7 @@
 // @ts-check
 
-import { S, F } from './sanctuary.js'
-import fetch    from 'node-fetch'
+import { fetch } from 'undici'
+import { S, F }  from './sanctuary.js'
 
 //    request :: StrMap -> Future e a
 const request = ({url, ...options}) => F.Future ((reject, resolve) => {
@@ -20,7 +20,7 @@ const request = ({url, ...options}) => F.Future ((reject, resolve) => {
 //    preflight :: StrMap -> Future e Response
 const preflight = options => request ({
   url: options.url,
-  method: 'HEAD',
+  method: 'HEAD', // OPTIONS is disallowed on raw.githubusercontent.com
   headers: {
     origin: 'https://raw.githubusercontent.com',
     'Access-Control-Request-Method': options.method || 'GET',

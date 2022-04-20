@@ -89,10 +89,11 @@ function* readline (chunk) {
 
 //    lexer :: String -> Array Token
 const lexer = S.pipe ([
-  trace ('before lines'),
+  // trace ('before lines'),
   lines,
-  trace ('after lines'),
+  // trace ('after lines'),
   S.array ([createToken ('') (TOKEN.UNKNOWN)]) (tokenize),
+  // trace ('tokens'),
   // TODO: syntax validation? E.i. Parent must come before child
 ])
 
@@ -119,7 +120,9 @@ const parse = pair => token => {
 //    parser :: Array Token -> Ast
 const parser = S.pipe ([
   S.reduce (parse) ([{},[]]),
-  fst
+  fst,
+  // trace ('ast'),
 ])
 
+/** String -> Ast */
 export default S.compose (parser) (lexer)
