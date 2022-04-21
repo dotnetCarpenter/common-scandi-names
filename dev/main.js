@@ -55,19 +55,9 @@ const options = url => ({
   // }
 })
 
-const fetchDanishNames = getStream (options (baseUrl ('Danish')))
-const fetchSwedishNames = getStream (options (baseUrl ('Swedish')))
-const fetchNorwegianNames = getStream (options (baseUrl ('Norwegian')))
-
-// String -> baseUrl -> options -> request -> responseToText -> parallel -> parser - get/sort -> print
-
-const endpoints = (['Danish', 'Swedish', 'Norwegian'])
-
-// getText -> endpoints -> parallel -> parser -> ~prop~get/sort ~> print
-// getHeaders -> endpoints -> parallel ~> print
-// getStream -> endpoints -> parallel -> parser -> ~prop~get/sort ~> print
-// doPreflight -> endpoints -> parallel ~> print
-// preprint :: sameLength -> zip3
+const fetchDanishNames = getText (options (baseUrl ('Danish')))
+const fetchSwedishNames = getText (options (baseUrl ('Swedish')))
+const fetchNorwegianNames = getText (options (baseUrl ('Norwegian')))
 
 const print = x => (console.log (util.inspect (x, {
   maxArrayLength: 1034,
@@ -101,4 +91,4 @@ const cancel = (
                           ]))
 )
 
-// cancel ()
+// setTimeout (cancel, 210)

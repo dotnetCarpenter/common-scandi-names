@@ -16,6 +16,11 @@ const trace = msg => x => (console.debug (msg, util.inspect (x, {
   maxStringLength: 20000,
   colors: true
 })), x)
+const timeStart = tag => x => (console.time (tag), x)
+const timeEnd   = tag => x => (console.timeEnd (tag), x)
+
+// https://github.com/faker-js/faker/blob/main/src/locales/nb_NO/name/last_name.ts
+// https://github.com/faker-js/faker/blob/main/src/locales/sv/name/last_name.ts
 
 //    baseUrl :: String -> String
 const baseUrl = language => `https://raw.githubusercontent.com/OpenXcom/OpenXcom/master/bin/common/SoldierName/${language}.nam`
@@ -39,7 +44,7 @@ const padArray = pad => n =>
     array.concat (Array.from (new Array (n - array.length)).fill (pad)))
 
 //    sameLength :: Array (Array String) -> Array (Array String)
-const sameLength = S.ap (S.flip (padArray (''))) (max)
+const sameLength = S.ap (S.flip (padArray ('&nbsp;'))) (max)
 
 //    zip3 :: Array a -> Array a -> Array a -> Array (Array a)
 const zip3 = a1 => a2 => a3 => (
@@ -51,32 +56,60 @@ const zip3 = a1 => a2 => a3 => (
                (a3))
 )
 
-/**   get :: String -> Future String String */
-const get = S.pipe ([baseUrl, options, request, responseToText])
+/**   fetch :: Future e a -> String -> Future e a */
+const fetch = transformer => S.pipe ([baseUrl, options, request, transformer])
 
 /**   parse :: String -> Maybe (Array String) */
 const parse = S.pipe ([
+  timeStart ('parser'),
   parser,
+  timeEnd ('parser'),
   S.get (S.is ($.Array ($.String))) ('maleLast'),
   S.map (S.sort),
 ])
 
 /**   lastNames :: Array String -> Future String (Array Maybe String) */
 const lastNames = S.pipe ([
-  S.map (get),
+  S.map (fetch (responseToText)),
   S.map (S.map (parse)),
   F.parallel (3)
 ])
 
-/**   render :: Array (Array String) -> Array String */
-const render = S.pipe ([
+const headers = S.pipe ([
+  S.map (fetch (responseToHeaders)),
+  F.parallel (3)
+])
+
+/**   column3 :: Array (Array String) -> Array String */
+const column3 = S.pipe ([
+  timeStart ('column3'),
   sameLength,
   as => zip3 (as[0]) (as[1]) (as[2]),
+  timeEnd ('column3'),
 ])
+
+/**   iteratorToArray :: Iterator a a -> Array a */
+const iteratorToArray = it => S.join ([...it])
+/**   iteratorToTuples :: Iterator a a -> Array (Array a) */
+const iteratorToTuples = it => [...it]
+/**   tuplesToPairs :: Array (Array a) -> Array (Pair a a) */
+const tuplesToPairs = S.map (([fst, snd]) => S.Pair (fst) (snd))
+/**   iteratorToPairs :: Iterator a a -> Array (Pair a a) */
+const iteratorToPairs = S.compose (tuplesToPairs)
+                                  (iteratorToTuples)
+
+/**   duplicates :: (Setoid a, Foldable f) => f a -> f a */
+const duplicates = (
+  S.array ([])
+  (x => xs =>
+    S.elem (x) (xs)
+      ? S.prepend (x) (duplicates (S.reject (S.equals (x)) (xs)))
+      : duplicates (xs))
+)
 
 Object.defineProperty (parse, 'name', { value: 'parse' })
 Object.defineProperty (lastNames, 'name', { value: 'lastNames' })
-Object.defineProperty (render, 'name', { value: 'render' })
+Object.defineProperty (column3, 'name', { value: 'column3' })
 
 
 const files = ['Danish', 'Swedish', 'Norwegian']
@@ -84,9 +117,23 @@ const cancel = (
   F.forkCatch (e => console.error (`Fatal Error: ${e.message}\n${e.stack}`))
               (console.error)
               (S.pipe ([
-                S.sequence (S.Maybe),// Array (Maybe (Array String))
-                S.map (render),      // Maybe (Array (Array String))
-                S.map (trace ('after render')),
+                // before print for headers (files)
+                S.map (iteratorToTuples),
+                S.join,
+                S.sort,
+                S.groupBy (S.equals),
+                S.map (S.head),
+                S.map (S.map (S.prepend ('&nbsp;'))),
+
+                // always needed
+                S.sequence (S.Maybe), // Array (Maybe (Array String))
+
+                // before print for lastNames (files)
+                // S.map (column3),      // Maybe (Array (Array String))
+
+                trace ('render:\n'),
               ]))
-              (lastNames (files))
+              (headers (files))
+              // (lastNames (files))
 )
+// setTimeout (cancel, 210)
