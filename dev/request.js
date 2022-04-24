@@ -1,5 +1,3 @@
-// @ts-check
-
 import { fetch } from 'undici'
 import { S, F }  from './sanctuary.js'
 
@@ -22,7 +20,8 @@ const preflight = options => request ({
   url: options.url,
   method: 'HEAD', // OPTIONS is disallowed on raw.githubusercontent.com
   headers: {
-    origin: 'https://raw.githubusercontent.com',
+    // setting origin will be ignored in any browser
+    origin: 'https://dotnetcarpenter.github.io',
     'Access-Control-Request-Method': options.method || 'GET',
     'Access-Control-Request-Headers': Object.keys (options.headers).join ()
   }

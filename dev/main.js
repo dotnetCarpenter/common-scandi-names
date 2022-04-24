@@ -1,19 +1,39 @@
-import util     from 'util'
-import Identity from 'sanctuary-identity'
-import { S, F } from './sanctuary.js'
-import parser   from './parser.js'
+// @ts-check
+
+import util         from 'util'
+import { S, F, $ }  from './sanctuary.js'
+import parser       from './parser.js'
 import {
   request,
   preflight,
   responseToStream,
   responseToText,
   responseToHeaders
-}               from './request.js'
+}                   from './request.js'
 
-/**
- * @template L,R
- * @typedef { import("fluture").FutureInstance<L,R> } Future
- */
+const trace = msg => x => (console.debug (msg, util.inspect (x, {
+  maxArrayLength: 1034,
+  maxStringLength: 20000,
+  colors: true
+})), x)
+const timeStart = tag => x => (console.time (tag), x)
+const timeEnd   = tag => x => (console.timeEnd (tag), x)
+
+// https://github.com/faker-js/faker/blob/main/src/locales/nb_NO/name/last_name.ts
+// https://github.com/faker-js/faker/blob/main/src/locales/sv/name/last_name.ts
+
+//    baseUrl :: String -> String
+const baseUrl = language => `https://raw.githubusercontent.com/OpenXcom/OpenXcom/master/bin/common/SoldierName/${language}.nam`
+
+//    options :: String -> Object
+const options = url => ({
+  redirect: 'follow',
+  url: url,
+  method: 'GET',
+  // headers: {
+  //   range: 'bytes=0-256'
+  // }
+})
 
 //    max :: Array (Array a) -> Integer
 const max = S.compose (ns => Math.max (...ns)) (S.map (S.size))
@@ -24,7 +44,7 @@ const padArray = pad => n =>
     array.concat (Array.from (new Array (n - array.length)).fill (pad)))
 
 //    sameLength :: Array (Array String) -> Array (Array String)
-const sameLength = S.ap (S.flip (padArray (''))) (max)
+const sameLength = S.ap (S.flip (padArray ('&nbsp;'))) (max)
 
 //    zip3 :: Array a -> Array a -> Array a -> Array (Array a)
 const zip3 = a1 => a2 => a3 => (
@@ -36,59 +56,78 @@ const zip3 = a1 => a2 => a3 => (
                (a3))
 )
 
-const trace = msg => x => (console.debug (msg, x), x)
+/**   fetch :: Future e a -> String -> Future e a */
+const fetch = transformer => S.pipe ([baseUrl, options, request, transformer])
 
-const baseUrl = language => `https://raw.githubusercontent.com/OpenXcom/OpenXcom/master/bin/common/SoldierName/${language}.nam`
+/**   parse :: String -> Maybe (Array String) */
+const parse = S.pipe ([
+  timeStart ('parser'),
+  parser,
+  timeEnd ('parser'),
+  S.get (S.is ($.Array ($.String))) ('maleLast'),
+  S.map (S.sort),
+])
 
-const doPreflight = S.compose (responseToHeaders) (preflight)
-const getText     = S.compose (responseToText)    (request)
-const getHeaders  = S.compose (responseToHeaders) (request)
-const getStream   = S.compose (responseToStream)  (request)
+/**   lastNames :: Array String -> Future String (Array Maybe String) */
+const lastNames = S.pipe ([
+  S.map (fetch (responseToText)),
+  S.map (S.map (parse)),
+  F.parallel (3)
+])
+
+/**   column3 :: Array (Array String) -> Array String */
+const column3 = S.pipe ([
+  timeStart ('column3'),
+  sameLength,
+  as => zip3 (as[0]) (as[1]) (as[2]),
+  timeEnd ('column3'),
+])
+
+/**   iteratorToArray :: Iterator a a -> Array a */
+const iteratorToArray = it => S.join ([...it])
+/**   iteratorToTuples :: Iterator a a -> Array (Array a) */
+const iteratorToTuples = Array.from //it => [...it]
+/**   tuplesToPairs :: Array (Array a) -> Array (Pair a a) */
+const tuplesToPairs = S.map (([fst, snd]) => S.Pair (fst) (snd))
+/**   iteratorToPairs :: Iterator a a -> Array (Pair a a) */
+const iteratorToPairs = S.compose (tuplesToPairs)
+                                  (iteratorToTuples)
 
 
-const options = url => ({
-  redirect: 'follow',
-  url: url,
-  method: 'GET',
-  // headers: {
-  //   range: 'bytes=0-256'
-  // }
-})
+const headers = S.pipe ([
+  S.map (fetch (responseToHeaders)),
+  F.parallel (3),
+])
 
-const fetchDanishNames = getText (options (baseUrl ('Danish')))
-const fetchSwedishNames = getText (options (baseUrl ('Swedish')))
-const fetchNorwegianNames = getText (options (baseUrl ('Norwegian')))
+const formatHeaders = S.pipe ([
+  // unpack
+  S.map (iteratorToTuples),
+  S.join,
+  // remove duplicates
+  S.sort,
+  S.groupBy (S.equals),
+  S.map (S.head),
+  // add extra empty column for table
+  S.map (S.map (S.prepend ('&nbsp;'))),
+])
 
-const print = x => (console.log (util.inspect (x, {
-  maxArrayLength: 1034,
-  maxStringLength: 20000,
-  colors: true
-})), x)
-
-const timeStart = tag => x => (console.time (tag), x)
-const timeEnd   = tag => x => (console.timeEnd (tag), x)
-
+const files = ['Danish', 'Swedish', 'Norwegian']
 const cancel = (
   F.forkCatch (e => console.error (`Fatal Error: ${e.message}\n${e.stack}`))
               (console.error)
               (S.pipe ([
-                S.map (S.pipe ([
-                  timeStart ('parser'),
-                  parser,
-                  timeEnd ('parser'),
-                  S.prop ('maleLast'), // TODO: not safe use S.get :: Maybe String instead
-                  S.sort
-                ])),
-                sameLength,
-                as => zip3 (as[0]) (as[1]) (as[2]),
-                print,
-              ]))
-              (F.parallel (3)
-                          ([
-                            fetchDanishNames,
-                            fetchSwedishNames,
-                            fetchNorwegianNames
-                          ]))
-)
+                // before print for headers (files)
+                formatHeaders,
 
+                // always needed
+                S.sequence (S.Maybe), // Array (Maybe (Array String))
+
+                // before print for lastNames (files)
+                // S.map (column3),
+
+                trace ('render:\n'),
+              ]))
+              (headers (files))
+              // (lastNames (files))
+)
 // setTimeout (cancel, 210)
