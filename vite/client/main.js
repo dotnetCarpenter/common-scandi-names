@@ -93,7 +93,7 @@ const displayNames = S.pipe ([
   }
 ])
 
-//    displayHeaders :: String -> Void
+//    displayHeaders :: Headers -> Void
 const displayHeaders = data => {
   resultPre.textContent = data
 }
