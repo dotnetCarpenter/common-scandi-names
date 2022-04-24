@@ -3,6 +3,7 @@
   --bg-color: hsl(0, 0%, 100%);
   --bg-color-zebra: hsl(0, 0%, 96%);
   --text-color-visited: hsl(0, 0%, 53%);
+  --text-color-highlight: hsl(0, 0%, 100%);
 
   --border: solid 1px #ddd;
 
@@ -13,10 +14,11 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --text-color: hsl(0, 0%, 93%);
+    --text-color: hsl(0, 0%, 83%);
     --bg-color: hsl(210, 29%, 24%);
     --bg-color-zebra: hsl(210, 29%, 30%);
     --text-color-visited: hsl(0, 0%, 63%);
+    --text-color-highlight: hsl(0, 0%, 100%);
 
     --border: solid 1px #ddd;
   }
@@ -40,6 +42,9 @@ a {
 }
 a:visited {
   color: var(--text-color-visited);
+}
+a:hover {
+  color: var(--text-color-highlight);
 }
 
 button {
@@ -118,6 +123,10 @@ section {
 .table-names td:last-child {
   border-right: none;
 }
+.table-names th:hover,
+.table-names td:hover {
+  color: var(--text-color-highlight);
+}
 .table-names tr {
   border-bottom: var(--border);
 }
@@ -135,7 +144,6 @@ section {
   position: sticky;
   top: 0;
 
-  vertical-align: bottom;
   text-align: center;
 
   background-color: var(--bg-color);
