@@ -35,18 +35,27 @@ const fetchSwedishNames = fetchData (Object.assign ({url: swedishUrl}, options))
 //    fetchNorwegianNames :: Future String String
 const fetchNorwegianNames = fetchData (Object.assign ({url: norwegianUrl}, options))
 
-//    fetchHeaders :: Future String String
-const fetchHeaders = (
-  S.compose (responseToHeaders)
-            (request)
-            ({
-              redirect: 'follow',
-              url: danishUrl,
-              method: 'HEAD'
-            })
+/**   headersToString :: Headers -> String */
+const headersToString = (
+  S.compose (S.reduce (s => t => s + `${t[0]}: ${t[1]}\n`) (''))
+            (Array.from)
 )
 
-//    max :: Array (Array a) -> Integer
+//    fetchHeaders :: Future String String
+const fetchHeaders = (
+  S.pipe ([
+    request,
+    responseToHeaders,
+    S.map (headersToString)
+  ])
+  ({
+    redirect: 'follow',
+    url: danishUrl,
+    method: 'HEAD'
+  })
+)
+
+/**   max :: Array (Array a) -> Integer */
 const max = S.compose (ns => Math.max (...ns)) (S.map (S.size))
 
 //    padArray :: a -> Integer -> Array (Array a) -> Array (Array a)

@@ -61,15 +61,13 @@ const responseToStream = S.pipe ([
   S.join,
 ])
 
-//    responseToHeaders :: Future e Response -> Future String String
+//    responseToHeaders :: Future e Response -> Future String Headers
 const responseToHeaders = S.pipe ([
   S.map (S.tagBy (S.prop ('ok'))),
   S.map (S.either (rejectionToString)
                   (S.compose (F.resolve)
                              (S.prop ('headers')))),
   S.join,
-  S.map (Array.from),
-  S.map (S.reduce (s => t => s + `${t[0]}: ${t[1]}\n`) (''))
 ])
 
 export default S.compose (responseToText)
