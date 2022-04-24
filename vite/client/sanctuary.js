@@ -31,7 +31,7 @@ const $PointerEvent = $.NullaryType
   (x => toString.call (x) === '[object PointerEvent]')
 
 const S = sanctuary.create ({
-	checkTypes: import.meta.env.DEV,
+	checkTypes: false, // import.meta.env.DEV,
   env: sanctuary.env.concat (flutureEnv, [
     $Event,
     $Response,
