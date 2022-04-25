@@ -19,7 +19,7 @@ const $Response = $.NullaryType
   (x => toString.call (x) === '[object Response]')
 
 const $Headers = $.NullaryType
-  ('Response')
+  ('Headers')
   ('https://devdocs.io/dom/headers')
   ([])
   (x => toString.call (x) === '[object Headers]')
@@ -40,4 +40,6 @@ const S = sanctuary.create ({
   ])
 })
 
-export { S, $, F }
+const debug = msg => x => (console.debug (msg, x), x)
+
+export { S, $, F, debug }

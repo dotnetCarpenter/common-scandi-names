@@ -1,4 +1,4 @@
-import { S } from './sanctuary.js'
+import { S, debug } from './sanctuary.js'
 
 const TOKEN = Object.freeze ({
   UNKNOWN: 0,
@@ -66,6 +66,7 @@ const lines = s => s === ''
 
 //    lexer :: String -> Array Token
 const lexer = S.pipe ([
+  // debug ('lexer'),
   lines,
   S.array ([createToken ('') (TOKEN.UNKNOWN)]) (tokenize),
   // TODO: syntax validation? E.i. Parent must come before child

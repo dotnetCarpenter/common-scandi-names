@@ -1,7 +1,7 @@
 // @ts-check
 
 import util         from 'util'
-import { S, F, $ }  from './sanctuary.js'
+import { F, S, $ }  from './sanctuary.js'
 import parser       from './parser.js'
 import {
   request,
@@ -106,9 +106,8 @@ const formatHeaders = S.pipe ([
   // remove duplicates
   S.sort,
   S.groupBy (S.equals),
-  S.map (S.head),
-  // add extra empty column for table
-  S.map (S.map (S.prepend ('&nbsp;'))),
+  S.map (S.compose (S.map (S.prepend ('&nbsp;')))
+                   (S.head)),
 ])
 
 const files = ['Danish', 'Swedish', 'Norwegian']

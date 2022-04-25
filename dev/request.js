@@ -62,7 +62,7 @@ const responseToStream = S.pipe ([
   S.join,
 ])
 
-//    responseToHeaders :: Future e Response -> Future String String
+//    responseToHeaders :: Future e Response -> Future String Headers
 const responseToHeaders = S.pipe ([
   S.map (S.tagBy (S.prop ('ok'))),
   S.map (S.either (rejectionToString)

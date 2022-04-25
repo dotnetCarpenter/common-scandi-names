@@ -4,7 +4,6 @@ const log = console.log
 
 const trace = msg => x => (log (msg, x), x)
 
-
 /**   iteratorToTuples :: Iterator a a -> Array (Array a) */
 const iteratorToTuples = Array.from //it => [...it]
 
