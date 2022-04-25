@@ -85,6 +85,22 @@ const lastNames = S.pipe ([
 /**   headers :: Array (String) -> Array (Future e Headers) */
 const headers = S.map (fetch (responseToHeaders))
 
+
+// Add names to anonymous functions so that they are easier to spot in a profile
+// Object.defineProperty (headers, 'name', { value: 'headers'})
+// Object.defineProperty (max, 'name', { value: 'max'})
+// Object.defineProperty (padArray, 'name', { value: 'padArray'})
+// Object.defineProperty (sameLength, 'name', { value: 'sameLength'})
+// Object.defineProperty (zip3, 'name', { value: 'zip3'})
+// Object.defineProperty (column3, 'name', { value: 'column3'})
+// Object.defineProperty (iteratorToTuples, 'name', { value: 'iteratorToTuples'})
+// Object.defineProperty (formatHeaders, 'name', { value: 'formatHeaders'})
+// Object.defineProperty (baseUrl, 'name', { value: 'baseUrl'})
+// Object.defineProperty (options, 'name', { value: 'options'})
+// Object.defineProperty (fetch, 'name', { value: 'fetch'})
+// Object.defineProperty (parse, 'name', { value: 'parse'})
+// Object.defineProperty (lastNames, 'name', { value: 'lastNames'})
+
 //-------------- DOM code --------------
 
 const appHtml       = document.getElementById ('app')
