@@ -7,13 +7,13 @@ import {
 
 const toString = Object.prototype.toString
 
-const $Response = $.Response = $.NullaryType
+$.Response = $.NullaryType
   ('Response')
   ('https://devdocs.io/dom/response')
   ([])
   (x => toString.call (x) === '[object Response]')
 
-const $Headers = $.Headers = $.NullaryType
+$.Headers = $.NullaryType
   ('Headers')
   ('https://devdocs.io/dom/headers')
   ([])
@@ -23,8 +23,8 @@ const $Headers = $.Headers = $.NullaryType
 const checkTypes = true
 
 const env = sanctuary.env.concat (flutureEnv).concat ([
-  $Response,
-  $Headers
+  $.Response,
+  $.Headers
 ])
 
 const S = sanctuary.create ({ checkTypes, env })
