@@ -128,8 +128,8 @@ const compute = model => (
               (e => model.error = `Error: ${e}`)
 )
 
-/**   update :: Model -> String -> Void */
-const update = model => msg => {
+/**   update :: String -> Model -> Void */
+const update = msg => model => {
   switch (msg) {
     case 'fetch':
       cancelButton.onclick = (
@@ -155,6 +155,13 @@ const update = model => msg => {
       )
       break
 
+    case '0':
+    case '1':
+    case '2':
+      // debugger
+      model.rows = S.sortBy (S.prop (msg)) (model.rows)
+      break
+
     default:
       throw new Error ('Not Implemented')
   }
@@ -164,7 +171,15 @@ const update = model => msg => {
 
 const fetchButton   = document.querySelector ('#fetch')
 const headersButton = document.querySelector ('#head')
+const columns       = document.querySelectorAll ('.table-names th')
 
-fetchButton.addEventListener ('click', update (model).bind (null, 'fetch'))
+/**   bind :: a -> (a -> b) -> (() -> b) */
+const bind = v => f => f.bind (null, v)
 
-headersButton.addEventListener ('click', update (model).bind (null, 'headers'))
+fetchButton.addEventListener ('click', bind (model) (update ('fetch')))
+
+headersButton.addEventListener ('click', bind (model) (update ('headers')))
+
+columns.forEach ((th, index) => {
+  th.addEventListener ('click', bind (model) (update (String (index))))
+})

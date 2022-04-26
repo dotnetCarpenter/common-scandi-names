@@ -107,15 +107,18 @@ section {
 }
 .table-names td,
 .table-names th,
-.table-names tr,
 .table-names thead,
 .table-names tbody {
   display: inline-block;
   width: 100%;
 }
-.table-names td,
-.table-names th {
-  width: calc(100% / 3 );
+.table-names tr {
+  display: flex;
+  width: 100%;
+}
+.table-names th,
+.table-names td {
+  padding: .3rem .6rem;
 }
 .table-names td {
   border-right: var(--border);
@@ -132,10 +135,6 @@ section {
 }
 .table-names tr:last-child:not(:has(> thead)) {
   border-bottom-width: 0;
-}
-.table-names th,
-.table-names td {
-  padding: .3rem .6rem;
 }
 .table-names tr:nth-child(even) {
   background-color: var(--bg-color-zebra);
