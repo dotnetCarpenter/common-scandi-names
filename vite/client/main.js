@@ -10,6 +10,42 @@ import {
 import parser        from './parser.js'
 import doT           from 'dot'
 
+
+/* ----------- Init ----------- */
+
+/**   baseUrl :: String -> String */
+const baseUrl = language => `https://raw.githubusercontent.com/OpenXcom/OpenXcom/master/bin/common/SoldierName/${language}.nam`
+
+/**   options :: String -> StrMap */
+const options = url => ({
+  redirect: 'follow',
+  url: url,
+  method: 'GET',
+  // headers: {
+  //   range: 'bytes=0-256'
+  // }
+})
+
+/**   fetch :: Future e a -> String -> Future e a */
+const fetch = transformer => S.pipe ([baseUrl, options, request, transformer])
+
+/**   parse :: String -> Maybe (Array String) */
+const parse = S.pipe ([
+  parser,
+  S.get (S.is ($.Array ($.String))) ('maleLast'),
+  S.map (S.sort),
+])
+
+/**   lastNames :: Array String -> Array (Future e (Maybe (Array String))) */
+const lastNames = S.pipe ([
+  S.map (fetch (responseToText)), // Array (Future e String)
+  S.map (S.map (parse)), // Array (Future e (Maybe (Array String)))
+])
+
+/**   headers :: Array (String) -> Array (Future e Headers) */
+const headers = S.map (fetch (responseToHeaders))
+
+
 /**   max :: Array (Array a) -> Integer */
 const max = S.compose (ns => Math.max (...ns)) (S.map (S.size))
 
@@ -53,104 +89,82 @@ const formatHeaders = S.pipe ([
   S.sequence (S.Maybe), // Maybe (Array (Array String))
 ])
 
-/**   baseUrl :: String -> String */
-const baseUrl = language => `https://raw.githubusercontent.com/OpenXcom/OpenXcom/master/bin/common/SoldierName/${language}.nam`
-
-/**   options :: String -> StrMap */
-const options = url => ({
-  redirect: 'follow',
-  url: url,
-  method: 'GET',
-  // headers: {
-  //   range: 'bytes=0-256'
-  // }
-})
-
-/**   fetch :: Future e a -> String -> Future e a */
-const fetch = transformer => S.pipe ([baseUrl, options, request, transformer])
-
-/**   parse :: String -> Maybe (Array String) */
-const parse = S.pipe ([
-  parser,
-  S.get (S.is ($.Array ($.String))) ('maleLast'),
-  S.map (S.sort),
-])
-
-/**   lastNames :: Array String -> Array (Future e (Maybe (Array String))) */
-const lastNames = S.pipe ([
-  S.map (fetch (responseToText)), // Array (Future e String)
-  S.map (S.map (parse)), // Array (Future e (Maybe (Array String)))
-])
-
-/**   headers :: Array (String) -> Array (Future e Headers) */
-const headers = S.map (fetch (responseToHeaders))
-
-
-// Add names to anonymous functions so that they are easier to spot in a profile
-// Object.defineProperty (headers, 'name', { value: 'headers'})
-// Object.defineProperty (max, 'name', { value: 'max'})
-// Object.defineProperty (padArray, 'name', { value: 'padArray'})
-// Object.defineProperty (sameLength, 'name', { value: 'sameLength'})
-// Object.defineProperty (zip3, 'name', { value: 'zip3'})
-// Object.defineProperty (column3, 'name', { value: 'column3'})
-// Object.defineProperty (iteratorToTuples, 'name', { value: 'iteratorToTuples'})
-// Object.defineProperty (formatHeaders, 'name', { value: 'formatHeaders'})
-// Object.defineProperty (baseUrl, 'name', { value: 'baseUrl'})
-// Object.defineProperty (options, 'name', { value: 'options'})
-// Object.defineProperty (fetch, 'name', { value: 'fetch'})
-// Object.defineProperty (parse, 'name', { value: 'parse'})
-// Object.defineProperty (lastNames, 'name', { value: 'lastNames'})
-
-//-------------- DOM code --------------
-
-const appHtml       = document.getElementById ('app')
-const fetchButton   = appHtml.querySelector   ('#fetch')
-const headersButton = appHtml.querySelector   ('#head')
-const cancelButton  = appHtml.querySelector   ('#cancel-fetch')
-const resultPre     = appHtml.querySelector   ('#result')
-const rows          = appHtml.querySelector   ("#rows")
-const files         = ['Danish', 'Swedish', 'Norwegian']
-
 /**   renderRows :: Array -> Html */
 const renderRows = doT.template (document.getElementById ("rowTmpl").textContent)
 
-/**   displayNames :: Array (Maybe (Array String)) -> Void */
-const displayNames = S.pipe ([
-  S.sequence (S.Maybe), // Maybe (Array (Array String))
-  S.maybe ([]) (column3), // Array (Array3 String)
-  renderRows,
-  htmlNames => {
-    rows.innerHTML = htmlNames
-  }
-])
 
-/**   displayHeaders :: Headers -> Void */
-const displayHeaders = S.pipe ([
-  formatHeaders, // Maybe (Array (Array3 String)
-  S.maybe ([]) (renderRows),
-  htmlHeaders => {
-    rows.innerHTML = htmlHeaders
-  }
-])
+/* ----------- ViewModel ----------- */
 
-//    consume :: (a -> Any) -> Future e a
-const consume = (
-  F.forkCatch (e => resultPre.textContent = `Fatal Error: ${e.message}\n${e.stack}`)
-              (error => { resultPre.textContent = `Error: ${error}` })
+/**   ViewModel :: Array (Array3 String) -> String -> Model */
+const ViewModel = (data, error) => {
+  const resultPre = document.querySelector   ('#result')
+  const rows      = document.querySelector   ("#rows")
+
+  return {
+    get rows () {
+      return data
+    },
+    set rows (r) {
+      rows.innerHTML = renderRows (r)
+      data = r
+    },
+    get error () {
+      return error
+    },
+    set error (e) {
+      resultPre.textContent = e
+      error = e
+    },
+  }
+}
+
+const model = ViewModel ([], {})
+const files = ['Danish', 'Swedish', 'Norwegian']
+const cancelButton = document.querySelector ('#cancel-fetch')
+
+/**   compute :: Model -> (b -> Any) -> Future a b -> Cancel */
+const compute = model => (
+  F.forkCatch (e => model.error = `Fatal Error: ${e.message}\n${e.stack}`)
+              (e => model.error = `Error: ${e}`)
 )
 
-/**   activateCancelButton :: Array (Future String String) -> Void */
-const activateCancelButton = f => futures => (
-  cancelButton.onclick = (
-    consume (f)
-            (F.parallel (3) (futures))
-  )
-)
+/**   update :: Model -> String -> Void */
+const update = model => msg => {
+  switch (msg) {
+    case 'fetch':
+      cancelButton.onclick = (
+        compute (model)
+                (S.pipe ([
+                  S.sequence (S.Maybe), // Maybe (Array (Array String))
+                  S.maybe ([]) (column3), // Array (Array3 String)
+                  rows => model.rows = rows
+                ]))
+                (F.parallel (3) (lastNames (files)))
+      )
+      break
 
-fetchButton.addEventListener ('click', () => {
-  activateCancelButton (displayNames) (lastNames (files))
-})
+    case 'headers':
+      cancelButton.onclick = (
+        compute (model)
+                (S.pipe ([
+                  formatHeaders,
+                  S.maybe ([]) (S.I),
+                  rows => model.rows = rows
+                ]))
+                (F.parallel (3) (headers (files)))
+      )
+      break
 
-headersButton.addEventListener ('click', () => {
-  activateCancelButton (displayHeaders) (headers (files))
-})
+    default:
+      throw new Error ('Not Implemented')
+  }
+}
+
+/* ----------- View ----------- */
+
+const fetchButton   = document.querySelector ('#fetch')
+const headersButton = document.querySelector ('#head')
+
+fetchButton.addEventListener ('click', update (model).bind (null, 'fetch'))
+
+headersButton.addEventListener ('click', update (model).bind (null, 'headers'))
