@@ -9,9 +9,8 @@ import {
 }                    from './request.js'
 import parser        from './parser.js'
 import doT           from 'dot'
+import Identity      from 'sanctuary-identity'
 
-
-/* ----------- Init ----------- */
 
 /**   baseUrl :: String -> String */
 const baseUrl = language => `https://raw.githubusercontent.com/OpenXcom/OpenXcom/master/bin/common/SoldierName/${language}.nam`
@@ -44,7 +43,6 @@ const lastNames = S.pipe ([
 
 /**   headers :: Array (String) -> Array (Future e Headers) */
 const headers = S.map (fetch (responseToHeaders))
-
 
 /**   max :: Array (Array a) -> Integer */
 const max = S.compose (ns => Math.max (...ns)) (S.map (S.size))
@@ -86,18 +84,37 @@ const formatHeaders = S.pipe ([
   S.groupBy (S.equals),
   S.map (S.compose (S.map (S.append ('&nbsp;')))
                    (S.head)),
-  S.sequence (S.Maybe), // Maybe (Array (Array String))
+  S.sequence (S.Maybe), // Maybe (Array (Array3 String))
 ])
 
 /**   renderRows :: Array -> Html */
 const renderRows = doT.template (document.getElementById ("rowTmpl").textContent)
 
-
 /* ----------- ViewModel ----------- */
 
+/**   rowDescending :: Ord a */
+const rowDescending = value => Object.assign (Object.create (Identity (value)), {
+  'fantasy-land/lte': x => {
+    let [,,a] = S.extract (x)
+    let [,,b] = value
+
+    return S.gte (a) (b)
+  }
+})
+/**   rowAscending :: Ord a */
+const rowAscending = value => Object.assign (Object.create (Identity (value)), {
+  'fantasy-land/lte': x => {
+    let [,,a] = S.extract (x)
+    let [,,b] = value
+
+    return S.lte (a) (b)
+  }
+})
+
+/** sortOrderEnum :: StrMap Ord a */
 const sortOrderEnum = {
-  'ascending': true,
-  'descending': false
+  'ascending': rowAscending,
+  'descending': rowDescending
 }
 
 /**   ViewModel :: Array (Array3 String) -> String -> Number -> Model */
@@ -113,6 +130,7 @@ const ViewModel = (data, error, sortOrder) => {
       rows.innerHTML = renderRows (r)
       data = r
     },
+
     get error () {
       return error
     },
@@ -120,12 +138,8 @@ const ViewModel = (data, error, sortOrder) => {
       resultPre.textContent = e
       error = e
     },
-    get sortOrder () {
-      return sortOrder
-    },
-    set sortOrder (s) {
-      sortOrder = s
-    }
+
+    sortOrder,
   }
 }
 
@@ -167,27 +181,14 @@ const update = msg => model => {
       break
 
     case 'sort':
-      // trick because the underlaying data type is a Boolean
-      model.sortOrder = !model.sortOrder
+      model.sortOrder = (
+        model.sortOrder === sortOrderEnum.ascending
+          ? sortOrderEnum.descending
+          : sortOrderEnum.ascending
+      )
 
-      const rs = structuredClone (model.rows)
+      model.rows = S.sortBy (model.sortOrder) (model.rows)
 
-      model.rows = rs.sort (([,,a], [,,b]) => {
-        let comparator
-        switch (model.sortOrder) {
-          case sortOrderEnum.descending:
-            comparator = S.gte
-            break
-
-          case sortOrderEnum.ascending:
-            comparator = S.lte
-            break
-        }
-
-        return comparator (a) (b)
-          ? 1
-          : -1
-      });
       break
 
     default:

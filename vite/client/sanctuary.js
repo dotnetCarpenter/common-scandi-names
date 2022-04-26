@@ -6,17 +6,12 @@ import {
 }                from 'fluture-sanctuary-types'
 
 const toString = Object.prototype.toString
+
 const $Event = $.NullaryType
   ('Event')
   ('https://devdocs.io/dom/event')
   ([])
   (x => toString.call (x) === '[object Event]')
-
-const $Response = $.NullaryType
-  ('Response')
-  ('https://devdocs.io/dom/response')
-  ([])
-  (x => toString.call (x) === '[object Response]')
 
 const $Headers = $.NullaryType
   ('Headers')
@@ -25,21 +20,41 @@ const $Headers = $.NullaryType
   (x => toString.call (x) === '[object Headers]')
 
 const $PointerEvent = $.NullaryType
-  ('Response')
+  ('PointerEvent')
   ('https://devdocs.io/dom/pointerevent')
   ([])
   (x => toString.call (x) === '[object PointerEvent]')
 
-const S = sanctuary.create ({
-	checkTypes: false, // import.meta.env.DEV,
-  env: sanctuary.env.concat (flutureEnv, [
-    $Event,
-    $Response,
-    $Headers,
-    $PointerEvent
-  ])
-})
+const $Response = $.NullaryType
+  ('Response')
+  ('https://devdocs.io/dom/response')
+  ([])
+  (x => toString.call (x) === '[object Response]')
+
+const checkTypes = false // import.meta.env.DEV,
+
+const env = sanctuary.env.concat (flutureEnv).concat ([
+  $Event,
+  $Headers,
+  $PointerEvent,
+  $Response,
+])
+
+const S = sanctuary.create ({ checkTypes, env })
+
+const def = $.create ({ checkTypes, env })
+
+const $_ = Object.assign ({
+  Event: $Event,
+  Headers: $Headers,
+  PointerEvent: $PointerEvent,
+  Response: $Response,
+}, $)
 
 const debug = msg => x => (console.debug (msg, x), x)
 
-export { S, $, F, debug }
+export {
+  S, def, F,
+  $_ as $,
+  debug
+}
