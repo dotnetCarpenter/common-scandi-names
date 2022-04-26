@@ -171,8 +171,6 @@ const update = msg => model => {
 
       model.sortOrder = !model.sortOrder
 
-      console.debug ('model.sortOrder', model.sortOrder)
-
       model.rows = rs.sort (([,,a], [,,b]) => {
         if (a < b) return model.sortOrder === sortOrderEnum.descending
           ? 1

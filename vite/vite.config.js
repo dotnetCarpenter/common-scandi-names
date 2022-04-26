@@ -6,7 +6,7 @@ export default {
     outDir: '../docs',
     emptyOutDir: true,
     chunkSizeWarningLimit: 100,
-    // sourcemap: true,
+    sourcemap: true,
     // rollupOptions: {
     //   plugins: [
     //     visualizer (opts => ({
