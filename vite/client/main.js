@@ -167,20 +167,26 @@ const update = msg => model => {
       break
 
     case 'sort':
-      const rs = structuredClone (model.rows)
-
+      // trick because the underlaying data type is a Boolean
       model.sortOrder = !model.sortOrder
 
+      const rs = structuredClone (model.rows)
+
       model.rows = rs.sort (([,,a], [,,b]) => {
-        if (a < b) return model.sortOrder === sortOrderEnum.descending
+        let comparator
+        switch (model.sortOrder) {
+          case sortOrderEnum.descending:
+            comparator = S.gte
+            break
+
+          case sortOrderEnum.ascending:
+            comparator = S.lte
+            break
+        }
+
+        return comparator (a) (b)
           ? 1
           : -1
-
-        if (a > b) return model.sortOrder === sortOrderEnum.descending
-          ? -1
-          : 1
-
-        return 0
       });
       break
 
