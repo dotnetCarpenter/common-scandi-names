@@ -95,10 +95,15 @@ const renderRows = doT.template (document.getElementById ("rowTmpl").textContent
 
 /* ----------- ViewModel ----------- */
 
-/**   ViewModel :: Array (Array3 String) -> String -> Model */
-const ViewModel = (data, error) => {
-  const resultPre = document.querySelector   ('#result')
-  const rows      = document.querySelector   ("#rows")
+const sortOrderEnum = {
+  'ascending': true,
+  'descending': false
+}
+
+/**   ViewModel :: Array (Array3 String) -> String -> Number -> Model */
+const ViewModel = (data, error, sortOrder) => {
+  const resultPre = document.querySelector ('#result')
+  const rows      = document.querySelector ("#rows")
 
   return {
     get rows () {
@@ -115,10 +120,16 @@ const ViewModel = (data, error) => {
       resultPre.textContent = e
       error = e
     },
+    get sortOrder () {
+      return sortOrder
+    },
+    set sortOrder (s) {
+      sortOrder = s
+    }
   }
 }
 
-const model = ViewModel ([], {})
+const model = ViewModel ([], {}, sortOrderEnum.ascending)
 const files = ['Danish', 'Swedish', 'Norwegian']
 const cancelButton = document.querySelector ('#cancel-fetch')
 
@@ -155,11 +166,24 @@ const update = msg => model => {
       )
       break
 
-    case '0':
-    case '1':
-    case '2':
-      // debugger
-      model.rows = S.sortBy (S.prop (msg)) (model.rows)
+    case 'sort':
+      const rs = structuredClone (model.rows)
+
+      model.sortOrder = !model.sortOrder
+
+      console.debug ('model.sortOrder', model.sortOrder)
+
+      model.rows = rs.sort (([,,a], [,,b]) => {
+        if (a < b) return model.sortOrder === sortOrderEnum.descending
+          ? 1
+          : -1
+
+        if (a > b) return model.sortOrder === sortOrderEnum.descending
+          ? -1
+          : 1
+
+        return 0
+      });
       break
 
     default:
@@ -171,7 +195,7 @@ const update = msg => model => {
 
 const fetchButton   = document.querySelector ('#fetch')
 const headersButton = document.querySelector ('#head')
-const columns       = document.querySelectorAll ('.table-names th')
+const tableHead     = document.querySelector ('.table-names thead')
 
 /**   bind :: a -> (a -> b) -> (() -> b) */
 const bind = v => f => f.bind (null, v)
@@ -180,6 +204,4 @@ fetchButton.addEventListener ('click', bind (model) (update ('fetch')))
 
 headersButton.addEventListener ('click', bind (model) (update ('headers')))
 
-columns.forEach ((th, index) => {
-  th.addEventListener ('click', bind (model) (update (String (index))))
-})
+tableHead.addEventListener ('click', bind (model) (update ('sort')))

@@ -105,6 +105,23 @@ section {
   overflow-x: auto;
   overflow-y: scroll;
 }
+.table-names thead {
+  position: relative;
+  cursor: pointer;
+}
+.table-names thead:hover::before {
+  position: absolute;
+  top: 5px;
+  left: calc(50% - 3rem);
+  width: 6rem;
+
+  padding: .5em;
+  background-color: var(--bg-color);
+  border: var(--border);
+  border-radius: 5px;
+
+  content: 'Click to sort';
+}
 .table-names td,
 .table-names th,
 .table-names thead,

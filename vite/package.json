@@ -16,6 +16,7 @@
     "normalize.css": "^8.0.1",
     "sanctuary": "sanctuary-js/sanctuary#72bc20ad02c5944b661efdcdd14ab60ceb92c7b3",
     "sanctuary-def": "sanctuary-js/sanctuary-def#deadb523c488e8e7bbc988a662c62435be38a380",
+    "sanctuary-descending": "sanctuary-js/sanctuary-descending#969fb240c0a7123c69026172a526b4664eadbd7a",
     "sanctuary-either": "sanctuary-js/sanctuary-either#18f6238f1d1e8e36d3dcdb44732255b3349eef46",
     "sanctuary-maybe": "sanctuary-js/sanctuary-maybe#2d14d53f939c0a81e081d93dc4bda5622ca517a1",
     "sanctuary-pair": "sanctuary-js/sanctuary-pair#829187679afceec52e889f884bdc6e9b0c0d0a18",
