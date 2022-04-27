@@ -100,6 +100,7 @@ const lexer = S.pipe ([
 //    fst :: Array a -> a
 const fst = a => a[0]
 
+//    parse :: Array2 Ast (Array a) -> Token -> Array2 Ast (Array a)
 const parse = pair => token => {
   let ast = fst (pair), parent = pair[1]
 
