@@ -101,8 +101,42 @@ const parser_ = S.pipe ([
   timeEnd ('parse_'),
 ])
 
-function main () {
-  parser (tokens)
-  parser_ (tokens)
+// *****************************************************************************
+
+//    parse2 :: Pair Ast (Array a) -> Token -> Pair Ast (Array a)
+const parse2 = pair => token => {
+  let ast = S.unchecked.fst (pair), parent = S.unchecked.snd (pair)
+
+  switch (token.type) {
+    case TOKEN.PARENT:
+      parent = ast[token.value] = []
+      break
+    case TOKEN.CHILD:
+      parent.push (token.value)
+      break
+    default:
+      // skip token
+  }
+
+  return S.unchecked.Pair (ast) (parent)
 }
+
+//    parser2 :: Array Token -> Ast
+const parser2 = S.unchecked.pipe ([
+  timeStart ('parse2'),
+  S.unchecked.reduce (parse2) (S.unchecked.Pair ({}) ([])),
+  S.unchecked.fst,
+  timeEnd ('parse2'),
+])
+
+
+// *****************************************************************************
+
+
+function main () {
+  parser_ (tokens)
+  parser (tokens)
+  parser2 (tokens)
+}
+
 setTimeout (main, 2000)

@@ -11,7 +11,7 @@ module.exports = {
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
-        performance: resolve(__dirname, 'performance.html')
+        performance: resolve(__dirname, 'performance.html'),
       }
     //   plugins: [
     //     visualizer (opts => ({
