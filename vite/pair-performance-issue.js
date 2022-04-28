@@ -1,12 +1,41 @@
-process.env.NODE_ENV = 'production'
-
-import S from 'sanctuary'
+import sanctuary from 'sanctuary'
 import tokens from './norwegian-tokens.js'
 // import tokens from './swedish-tokens.js'
 
-const timeStart = tag => x => (console.time (tag), x)
-const timeEnd   = tag => x => (console.timeEnd (tag), x)
+const S = sanctuary.create ({ checkTypes: false, env: sanctuary.env })
 
+const time = new class Time {
+  htmlConsole = document.querySelector ('#console')
+
+  #tags = []
+  #equals = tag => t => t[0] === tag
+
+  #findTag (tag) {
+    return this.#tags.find (this.#equals (tag))
+  }
+
+  #removeTag (tag) {
+    return this.#tags.splice (this.#tags.findIndex (this.#equals (tag)), 1)
+  }
+
+  start (tag) {
+    console.time (tag)
+    this.#tags.push ([tag, Date.now ()])
+  }
+
+  end (tag) {
+    const tagPair = this.#findTag (tag)
+
+    if (tagPair) {
+      console.timeEnd (tag)
+      this.#removeTag (tag)
+      this.htmlConsole.textContent += `${tag}: ${Date.now () - tagPair[1]}ms\n`
+    }
+  }
+}
+
+const timeStart = tag => x => (time.start (tag), x)
+const timeEnd   = tag => x => (time.end (tag), x)
 
 const TOKEN = Object.freeze ({
   PARENT: 8,
@@ -37,8 +66,8 @@ const parse = pair => token => {
 const parser = S.pipe ([
   timeStart ('parse'),
   S.reduce (parse) (S.Pair ({}) ([])),
-  timeEnd ('parse'),
   S.fst,
+  timeEnd ('parse'),
 ])
 
 // *****************************************************************************
@@ -68,10 +97,12 @@ const parse_ = pair => token => {
 const parser_ = S.pipe ([
   timeStart ('parse_'),
   S.reduce (parse_) ([{},[]]),
-  timeEnd ('parse_'),
   fst,
+  timeEnd ('parse_'),
 ])
 
-
-parser_ (tokens)
-parser (tokens)
+function main () {
+  parser (tokens)
+  parser_ (tokens)
+}
+setTimeout (main, 2000)

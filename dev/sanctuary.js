@@ -20,7 +20,7 @@ const $Headers = $.NullaryType
   (x => toString.call (x) === '[object Headers]')
 
 
-const checkTypes = true
+const checkTypes = false
 
 const env = sanctuary.env.concat (flutureEnv).concat ([
   $Response,

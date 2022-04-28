@@ -1,13 +1,18 @@
-import { visualizer } from "rollup-plugin-visualizer"
+const { resolve } = require ('path')
+// const visualizer = require ('rollup-plugin-visualizer')
 
-export default {
+module.exports = {
   base: '/common-scandi-names/',
   build: {
     outDir: '../docs',
     emptyOutDir: true,
     chunkSizeWarningLimit: 100,
     sourcemap: true,
-    // rollupOptions: {
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        performance: resolve(__dirname, 'performance.html')
+      }
     //   plugins: [
     //     visualizer (opts => ({
     //       template: 'sunburst', // sunburst|treemap|network
@@ -16,6 +21,6 @@ export default {
     //       sourcemap: true
     //     }))
     //   ]
-    // }
+    }
   }
 }

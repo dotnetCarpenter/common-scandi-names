@@ -14,7 +14,7 @@ import {
 const trace = msg => x => (console.debug (msg, util.inspect (x, {
   maxArrayLength: 1034,
   maxStringLength: 20000,
-  colors: true
+  colors: false
 })), x)
 const timeStart = tag => x => (console.time (tag), x)
 const timeEnd   = tag => x => (console.timeEnd (tag), x)
@@ -116,17 +116,17 @@ const cancel = (
               (console.error)
               (S.pipe ([
                 // before print for headers (files)
-                formatHeaders,
+                // formatHeaders,
 
                 // always needed
                 S.sequence (S.Maybe), // Array (Maybe (Array String))
 
                 // before print for lastNames (files)
-                // S.map (column3),
+                S.map (column3),
 
                 trace ('render:\n'),
               ]))
-              (headers (files))
-              // (lastNames (files))
+              // (headers (files))
+              (lastNames (files))
 )
 // setTimeout (cancel, 210)
