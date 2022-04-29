@@ -1,12 +1,10 @@
-process.env.NODE_ENV = 'production'
-
 import S from 'sanctuary'
 import tokens from './norwegian-tokens.js'
 // import tokens from './swedish-tokens.js'
 
+
 const timeStart = tag => x => (console.time (tag), x)
 const timeEnd   = tag => x => (console.timeEnd (tag), x)
-
 
 const TOKEN = Object.freeze ({
   PARENT: 8,
